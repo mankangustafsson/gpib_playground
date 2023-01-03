@@ -1,0 +1,4 @@
+* Move probes array into Lab class, move Lab to its own file
+
+* Peak power read from spectrum analyzer
+6 * 40 *60
