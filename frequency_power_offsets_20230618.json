@@ -1,0 +1,626 @@
+{
+    "0": {
+        "frequency": 100000.0,
+        "offset": 0.135
+    },
+    "1": {
+        "frequency": 125000.0,
+        "offset": 0.095
+    },
+    "2": {
+        "frequency": 150000.0,
+        "offset": 0.07
+    },
+    "3": {
+        "frequency": 250000.0,
+        "offset": 0.04
+    },
+    "4": {
+        "frequency": 350000.0,
+        "offset": 0.03
+    },
+    "5": {
+        "frequency": 500000.0,
+        "offset": 0.03
+    },
+    "6": {
+        "frequency": 1000000.0,
+        "offset": 0.02
+    },
+    "7": {
+        "frequency": 1791000.0,
+        "offset": 0.045
+    },
+    "8": {
+        "frequency": 3500000.0,
+        "offset": 0.06
+    },
+    "9": {
+        "frequency": 10100000.0,
+        "offset": 0.165
+    },
+    "10": {
+        "frequency": 60100000.0,
+        "offset": 0.33
+    },
+    "11": {
+        "frequency": 140100000.0,
+        "offset": 0.65
+    },
+    "12": {
+        "frequency": 170100000.0,
+        "offset": 0.775
+    },
+    "13": {
+        "frequency": 185100000.0,
+        "offset": 0.9
+    },
+    "14": {
+        "frequency": 200100000.0,
+        "offset": 0.975
+    },
+    "15": {
+        "frequency": 230100000.0,
+        "offset": 0.875
+    },
+    "16": {
+        "frequency": 249990000.0,
+        "offset": 0.86
+    },
+    "17": {
+        "frequency": 249990000.1,
+        "offset": 0.86
+    },
+    "18": {
+        "frequency": 290100000.0,
+        "offset": 0.79
+    },
+    "19": {
+        "frequency": 360100000.0,
+        "offset": 0.74
+    },
+    "20": {
+        "frequency": 420100000.0,
+        "offset": 0.685
+    },
+    "21": {
+        "frequency": 480100000.0,
+        "offset": 0.735
+    },
+    "22": {
+        "frequency": 540100000.0,
+        "offset": 0.795
+    },
+    "23": {
+        "frequency": 600100000.0,
+        "offset": 0.705
+    },
+    "24": {
+        "frequency": 660100000.0,
+        "offset": 0.585
+    },
+    "25": {
+        "frequency": 720100000.0,
+        "offset": 0.545
+    },
+    "26": {
+        "frequency": 780100000.0,
+        "offset": 0.6
+    },
+    "27": {
+        "frequency": 840100000.0,
+        "offset": 0.6
+    },
+    "28": {
+        "frequency": 900100000.0,
+        "offset": 0.525
+    },
+    "29": {
+        "frequency": 960100000.0,
+        "offset": 0.405
+    },
+    "30": {
+        "frequency": 1020100000.0,
+        "offset": 0.33
+    },
+    "31": {
+        "frequency": 1080100000.0,
+        "offset": 0.385
+    },
+    "32": {
+        "frequency": 1140100000.0,
+        "offset": 0.46
+    },
+    "33": {
+        "frequency": 1200100000.0,
+        "offset": 0.425
+    },
+    "34": {
+        "frequency": 1260100000.0,
+        "offset": 0.285
+    },
+    "35": {
+        "frequency": 1320100000.0,
+        "offset": 0.245
+    },
+    "36": {
+        "frequency": 1380100000.0,
+        "offset": 0.33
+    },
+    "37": {
+        "frequency": 1440100000.0,
+        "offset": 0.33
+    },
+    "38": {
+        "frequency": 1500100000.0,
+        "offset": 0.28
+    },
+    "39": {
+        "frequency": 1560100000.0,
+        "offset": 0.22
+    },
+    "40": {
+        "frequency": 1620100000.0,
+        "offset": 0.16
+    },
+    "41": {
+        "frequency": 1680100000.0,
+        "offset": 0.085
+    },
+    "42": {
+        "frequency": 1740100000.0,
+        "offset": 0.125
+    },
+    "43": {
+        "frequency": 1800100000.0,
+        "offset": 0.165
+    },
+    "44": {
+        "frequency": 1860100000.0,
+        "offset": 0.16
+    },
+    "45": {
+        "frequency": 1920100000.0,
+        "offset": 0.195
+    },
+    "46": {
+        "frequency": 1980100000.0,
+        "offset": 0.285
+    },
+    "47": {
+        "frequency": 2040100000.0,
+        "offset": 0.355
+    },
+    "48": {
+        "frequency": 2100100000.0,
+        "offset": 0.48
+    },
+    "49": {
+        "frequency": 2160100000.0,
+        "offset": 0.65
+    },
+    "50": {
+        "frequency": 2220100000.0,
+        "offset": 0.755
+    },
+    "51": {
+        "frequency": 2280100000.0,
+        "offset": 0.805
+    },
+    "52": {
+        "frequency": 2340100000.0,
+        "offset": 0.95
+    },
+    "53": {
+        "frequency": 2400100000.0,
+        "offset": 1.1
+    },
+    "54": {
+        "frequency": 2460100000.0,
+        "offset": 1.135
+    },
+    "55": {
+        "frequency": 2520100000.0,
+        "offset": 1.18
+    },
+    "56": {
+        "frequency": 2580100000.0,
+        "offset": 1.33
+    },
+    "57": {
+        "frequency": 2640100000.0,
+        "offset": 1.425
+    },
+    "58": {
+        "frequency": 2700100000.0,
+        "offset": 1.395
+    },
+    "59": {
+        "frequency": 2760100000.0,
+        "offset": 1.405
+    },
+    "60": {
+        "frequency": 2820100000.0,
+        "offset": 1.47
+    },
+    "61": {
+        "frequency": 2880100000.0,
+        "offset": 1.495
+    },
+    "62": {
+        "frequency": 2940000000.0,
+        "offset": 1.67
+    },
+    "63": {
+        "frequency": 3000000000.0,
+        "offset": 1.81
+    },
+    "64": {
+        "frequency": 3060000000.0,
+        "offset": 1.79
+    },
+    "65": {
+        "frequency": 3120000000.0,
+        "offset": 1.63
+    },
+    "66": {
+        "frequency": 3180000000.0,
+        "offset": 1.57
+    },
+    "67": {
+        "frequency": 3240000000.0,
+        "offset": 1.71
+    },
+    "68": {
+        "frequency": 3300000000.0,
+        "offset": 1.77
+    },
+    "69": {
+        "frequency": 3360000000.0,
+        "offset": 1.56
+    },
+    "70": {
+        "frequency": 3420000000.0,
+        "offset": 1.31
+    },
+    "71": {
+        "frequency": 3480000000.0,
+        "offset": 1.28
+    },
+    "72": {
+        "frequency": 3540000000.0,
+        "offset": 1.3
+    },
+    "73": {
+        "frequency": 3600000000.0,
+        "offset": 1.22
+    },
+    "74": {
+        "frequency": 3660000000.0,
+        "offset": 1.11
+    },
+    "75": {
+        "frequency": 3720000000.0,
+        "offset": 1.03
+    },
+    "76": {
+        "frequency": 3780000000.0,
+        "offset": 0.83
+    },
+    "77": {
+        "frequency": 3840000000.0,
+        "offset": -0.03
+    },
+    "78": {
+        "frequency": 3900000000.0,
+        "offset": 0.33
+    },
+    "79": {
+        "frequency": 3960000000.0,
+        "offset": 0.32
+    },
+    "80": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "81": {
+        "frequency": 4000000000.0,
+        "offset": 0.24
+    },
+    "82": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "83": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "84": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "85": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "86": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "87": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "88": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "89": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "90": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "91": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "92": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "93": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "94": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "95": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "96": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "97": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "98": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "99": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "100": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "101": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "102": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "103": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "104": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "105": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "106": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "107": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "108": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "109": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "110": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "111": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "112": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "113": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "114": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "115": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "116": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "117": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "118": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "119": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "120": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "121": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "122": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "123": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "124": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "125": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "126": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "127": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "128": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "129": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "130": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "131": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "132": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "133": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "134": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "135": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "136": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "137": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "138": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "139": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "140": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "141": {
+        "frequency": 4000000000.0,
+        "offset": 0.23
+    },
+    "142": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "143": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "144": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "145": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "146": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "147": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "148": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "149": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "150": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "151": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "152": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "153": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "154": {
+        "frequency": 0.0,
+        "offset": 0.0
+    },
+    "155": {
+        "frequency": 0.0,
+        "offset": 0.0
+    }
+}
