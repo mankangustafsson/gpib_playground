@@ -1,5 +1,4 @@
-import pyvisa
-
+from Devices import *
 from quantiphy import Quantity
 import sys
 import time
@@ -40,12 +39,16 @@ parser.add_argument('-p', type = valid_port, metavar = 'port', default = '1',
                     help = 'desired output port')
 parser.add_argument('-d', type = valid_power, metavar = 'power',
                     default = '-10.0', help = 'desired output power in dBm')
+parser.add_argument('-u', metavar = 'unit',
+                    default = '8722', help = 'unit to connect to')
 args = parser.parse_args()
-print(args)
+#print(args)
 
-rm = pyvisa.ResourceManager()
-dev = rm.open_resource('GPIB1::16::INSTR')
-dev.timeout = 1000
+dev = Lab.connectByType(Device.Type.VNA, hint = args.u, verbose = True)
+if dev is None:
+    print('No VNA found')
+    exit(1)
+    
 q = f'{args.p}; POWE {args.d}; CWFREQ {args.f}'
 print(q)
 dev.write(q)

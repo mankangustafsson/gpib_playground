@@ -24,24 +24,27 @@ class Device:
         rm = pyvisa.ResourceManager()
         baudRate = None
         dev = None
-        if self.address.startswith('ASRL'):
-            dev = rm.open_resource(self.address, baud_rate = 115200)
-        else:
-            dev = rm.open_resource(self.address)
-            
-        dev.timeout = 5000
-        if self.term is not None:
-            dev.read_termination = self.term
-            dev.write_termination = self.term
-        if verbose:
-            print('Connecting to ' + self.address + '...',
-                  end ='', flush = True)
-        name = dev.query(self.idQuery)
-        while not self.name in name:
-            time.sleep(0.1)
+        try:
+            if self.address.startswith('ASRL'):
+                dev = rm.open_resource(self.address, baud_rate = 115200)
+            else:
+                dev = rm.open_resource(self.address)
+        
+            dev.timeout = 5000
+            if self.term is not None:
+                dev.read_termination = self.term
+                dev.write_termination = self.term
+            if verbose:
+                print('Connecting to ' + self.address + '...',
+                      end ='', flush = True)
             name = dev.query(self.idQuery)
-        if verbose: print('connected to ' + name)
-        return dev
+            while not self.name in name:
+                time.sleep(0.1)
+                name = dev.query(self.idQuery)
+            if verbose: print('connected to ' + name, end = '')
+            return dev
+        except:
+            return dev
 
 class Lab:    
 
@@ -53,6 +56,8 @@ class Lab:
                       Device.Type.POWER_METER, '?ID', '\r\n'),
                Device('GPIB0::16::INSTR', '8753',
                       Device.Type.VNA),
+               Device('GPIB1::16::INSTR', '8722',
+                      Device.Type.VNA),
                Device('GPIB0::19::INSTR', 'E44',
                       Device.Type.RF_GEN, term = '\n'),
                Device('ASRL51::INSTR', 'HP11713',
@@ -61,10 +66,11 @@ class Lab:
                       Device.Type.SPECTRUM_ANALYZER, term = '\n')]
     
     @staticmethod
-    def connectByType(deviceType, verbose = True):
+    def connectByType(deviceType, verbose = True, hint = None):
         for d in Lab.devices:
             if d.deviceType == deviceType:
-                return d.connect(verbose)
+                if hint is None or hint == d.name:
+                    return d.connect(verbose)
         return None
     
     @staticmethod
