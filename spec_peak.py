@@ -7,14 +7,13 @@ address = 'GPIB0::18::INSTR'
 rm = pyvisa.ResourceManager()
 dev = rm.open_resource(address)
 dev.timeout = 5000
-print('Connecting to ' + address + '...',
-                  end ='', flush = True)
+print('Connecting to ' + address + '...', end='', flush=True)
 name = dev.query('*IDN?')
 while not 'E4407B' in name:
     time.sleep(0.1)
     name = dev.query('*IDN?')
 print('connected to ' + name)
-try:    
+try:
     center = Quantity(sys.argv[1], 'Hz')
     span = Quantity(sys.argv[2], 'Hz')
     print('Setting span {} - {}'.format(Quantity(center - span/2, 'Hz'),

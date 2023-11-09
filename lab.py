@@ -1,3 +1,4 @@
-from Devices import *
+from Devices import Lab
 
-Lab.scanDevices()
+if __name__ == "__main__":
+    Lab.scanDevices()

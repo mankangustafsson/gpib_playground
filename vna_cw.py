@@ -1,15 +1,16 @@
-from Devices import *
-from quantiphy import Quantity
-import sys
-import time
+from Devices import Device, Lab
+from quantiphy import Quantity, QuantityError
+
 import argparse
+
 
 def valid_frequency(f):
     try:
-        frequency = Quantity(f, 'Hz');
+        frequency = Quantity(f, 'Hz')
         return frequency
-    except:
+    except QuantityError:
         raise argparse.ArgumentTypeError(f'{f} is not a valid frequency')
+
 
 def valid_port(p):
     if p == '1':
@@ -18,39 +19,41 @@ def valid_port(p):
         return 'S22'
     raise argparse.ArgumentTypeError(f'{p} is not a valid port')
 
+
 def valid_power(p):
     try:
         pf = float(p)
-        power = Quantity(p, 'dB');
+        power = Quantity(pf, 'dB')
         if power < -75.0 or power > -5.0:
             raise argparse.ArgumentTypeError(f'{power} is outside valid range')
         return power
     except argparse.ArgumentTypeError:
         raise
-    except:
+    except QuantityError:
         raise argparse.ArgumentTypeError(f'{p}%s is not a power')
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-f', type = valid_frequency, metavar = 'frequency',
-                    help = 'desired frequency.'
-                    ' Decimal values with suffixes k, M and G is also allowed')
-parser.add_argument('-p', type = valid_port, metavar = 'port', default = '1',
-                    help = 'desired output port')
-parser.add_argument('-d', type = valid_power, metavar = 'power',
-                    default = '-10.0', help = 'desired output power in dBm')
-parser.add_argument('-u', metavar = 'unit',
-                    default = '8722', help = 'unit to connect to')
-args = parser.parse_args()
-#print(args)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', type=valid_frequency, metavar='frequency',
+                        help='desired frequency.'
+                        ' Decimal values with suffixes k, M and G is'
+                        ' also allowed')
+    parser.add_argument('-p', type=valid_port, metavar='port',
+                        default='1', help='desired output port')
+    parser.add_argument('-d', type=valid_power, metavar='power',
+                        default='-10.0', help='desired output power in dBm')
+    parser.add_argument('-u', metavar='unit',
+                        default='8722', help='unit to connect to')
+    args = parser.parse_args()
+    # print(args)
 
-dev = Lab.connectByType(Device.Type.VNA, hint = args.u, verbose = True)
-if dev is None:
-    print('No VNA found')
-    exit(1)
-    
-q = f'{args.p}; POWE {args.d}; CWFREQ {args.f}'
-print(q)
-dev.write(q)
-dev.close()
+    dev = Lab.connectByType(Device.Type.VNA, hint=args.u, verbose=True)
+    if dev is None:
+        print('No VNA found')
+        exit(1)
 
+    q = f'{args.p}; POWE {args.d}; CWFREQ {args.f}'
+    print(q)
+    dev.write(q)
+    dev.close()

@@ -6,11 +6,12 @@ import binascii
 import struct
 import math
 
+
 baud = 115200
 
 def poll_RX():
     buf = ser.read(11)
-    if(len(buf) == 11):
+    if len(buf) == 11:
         if (buf[0]==36) and (buf[1]==70) and (buf[2]==54) and (buf[9]==13) and (buf[10]==10):
             if(dest==(binascii.unhexlify((buf[3].to_bytes(length=1,byteorder='big', signed=False))+(buf[4].to_bytes(length=1,byteorder='big', signed=False))))):
                 Ecode = (binascii.unhexlify((buf[7].to_bytes(length=1,byteorder='big', signed=False))+(buf[8].to_bytes(length=1,byteorder='big', signed=False))))
@@ -47,6 +48,7 @@ def GoToBoot():
             time.sleep(0.01)
     print("Timeout")
     return(False)
+
 
 def sendreq(TID):
     ser.write(b'$')
@@ -115,6 +117,7 @@ def Enable():
         print("Enable Fail")
         sys.exit()
 
+
 def Read_data():
     ser.write(b'$')
     ser.write(binascii.hexlify(dest).upper())
@@ -127,6 +130,7 @@ def Read_data():
     if(data_RX() == False):
         print("Read Fail")
         sys.exit()
+
 
 def Verify_data():
     File_active=True
@@ -153,6 +157,7 @@ def Verify_data():
         sys.exit()
     return(File_active)
 
+
 def Launch():
     ser.write(b'$')
     ser.write(binascii.hexlify(dest).upper())
@@ -162,6 +167,7 @@ def Launch():
     ser.write(binascii.hexlify(addr_lsb.to_bytes(length=1,byteorder='big', signed=False)).upper())
     ser.write(b'0000') #pad
     ser.write(b'\r\n')
+
 
 def Send_data(modifier):
     File_active=True
@@ -196,6 +202,7 @@ def Send_data(modifier):
         print("Write Fail")
         sys.exit()
     return(File_active)
+
 
 def Erase_data():
     Enable()
@@ -268,8 +275,8 @@ else:
     print("Argument description 'Port File    ID Addr Operation'")
     print("Argument example     'COM5 fil.bin 8C ABCD w'")
 
-#while (True):
-#    if (ser.inWaiting()>0):
-#        print(ser.read(ser.inWaiting()))
-#    time.sleep(0.01)
+# while (True):
+#     if (ser.inWaiting()>0):
+#         print(ser.read(ser.inWaiting()))
+#     time.sleep(0.01)
 f.close()

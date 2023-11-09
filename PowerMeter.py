@@ -1,17 +1,18 @@
-from Devices import *
+from Devices import Device, Lab
 from Probe import probes
 
 from quantiphy import Quantity
-import sys
 import time
 
+
 class PowerMeter:
-    def __init__(self, verbose = True):
+    def __init__(self, verbose=True):
         self.dev = Lab.connectByType(Device.Type.POWER_METER, verbose)
         self.verbose = verbose
-        
+
     def __del__(self):
-        self.dev.close()
+        if self.dev:
+            self.dev.close()
 
     @staticmethod
     def _checkSensor(sensor):
@@ -26,7 +27,7 @@ class PowerMeter:
     def preset(self):
         self.dev.write('PR')
 
-    def test_port(self, enable = True):
+    def test_port(self, enable=True):
         self.dev.write('OC1' if enable else 'OC0')
 
     def zero(self, sensorPort, probe):
@@ -34,16 +35,16 @@ class PowerMeter:
         self._checkSensor(sensor)
         self._checkProbe(probe)
         if self.verbose:
-            print('Zeroing and cal adjust of probe %u (%s) at sensor port %s...'
-                  %(probe, probes[probe].name, sensor),
-                  end ='', flush = True)
+            print('Zeroing and cal adjust of probe %u (%s) at sensor '
+                  'port %s...'
+                  % (probe, probes[probe].name, sensor),
+                  end='', flush=True)
         ref_cf = probes[probe].ref_cf
-        send = 'DE %sE ZE CL%.1fEN KB%.1fEN OC1 LG %sP TR2 TR3' %(sensor,
-                                                                  ref_cf,
-                                                                  ref_cf,
-                                                                  sensor)
-        oldTimeout = self.dev.timeout;
-        self.dev.timeout = 20000;
+        send = 'DE %sE ZE CL%.1fEN KB%.1fEN OC1 LG %sP TR2 TR3' % (sensor,
+                                                                   ref_cf,
+                                                                   ref_cf,
+                                                                   sensor)
+        self.dev.timeout = 20000
         dbm = self.dev.query_ascii_values(send)
         self.dev.timeout = 5000
         while dbm[0] != probes[probe].cal_read:
@@ -56,18 +57,18 @@ class PowerMeter:
 
     def _doRead(self, command, sensorOp, unit):
         if self.verbose:
-            print('%s reads: ' %sensorOp, end ='', flush = True)
+            print('%s reads: ' % sensorOp, end='', flush=True)
         command += 'TR2 TR3'
         power = self.dev.query_ascii_values(command)
         if unit == 'dBm':
-            value = '%.2f dBm' %power[0]
+            value = '%.2f dBm' % power[0]
         else:
             value = str(Quantity(power[0], '%' if "/" in sensorOp else 'W'))
-        print(value, end ='', flush = True)
+        print(value, end='', flush=True)
         return value
-    
-    def read(self, sensorList, probesList, frequencyList, offsetList = [0, 0],
-             operation = None, unit = 'dBm'):
+
+    def read(self, sensorList, probesList, frequencyList, offsetList=[0, 0],
+             operation=None, unit='dBm'):
         if len(sensorList) > 2 or len(sensorList) == 0:
             raise ValueError('Invalid number of sensor ports')
         if len(probesList) > 2 or len(probesList) == 0:
@@ -87,7 +88,7 @@ class PowerMeter:
             offsetList.append(offsetList[0])
         send = ''
         # Set cal factors
-        if len(frequencyList) > 0: 
+        if len(frequencyList) > 0:
             for n in range(0, len(sensorList)):
                 fi = n
                 if len(sensorList) > len(frequencyList):
@@ -95,11 +96,12 @@ class PowerMeter:
                 cf = probes[probesList[n]].get_cf(frequencyList[fi])
                 if self.verbose:
                     print('Set cal factor %.1f for probe %u in sensor %s at '
-                          'frequency %s' %(cf, probesList[n],
-                                           sensorList[n],
-                                           str(Quantity(frequencyList[fi], 'Hz'))))
-                                           
-                send += ('%sE KB%.1fEN ' %(sensorList[n], cf))
+                          'frequency %s' % (cf, probesList[n],
+                                            sensorList[n],
+                                            str(Quantity(frequencyList[fi],
+                                                         'Hz'))))
+
+                send += ('%sE KB%.1fEN ' % (sensorList[n], cf))
         send += 'AP OS%.2fEN ' % offsetList[0]
         send += 'BP OS%.2fEN ' % offsetList[1]
         # Unit
@@ -119,7 +121,7 @@ class PowerMeter:
         elif operation == 'B/A':
             send += 'BR '
         elif operation is not None:
-            raise ValueError('Invalid read operation: %s' %operation)
+            raise ValueError('Invalid read operation: %s' % operation)
         else:
             # Read each sensor
             for s in sensorList:

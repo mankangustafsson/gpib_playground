@@ -7,14 +7,13 @@ address = 'GPIB0::28::INSTR'
 rm = pyvisa.ResourceManager()
 dev = rm.open_resource(address)
 dev.timeout = 5000
-print('Connecting to ' + address + '...',
-                  end ='', flush = True)
+print('Connecting to ' + address + '...', end='', flush=True)
 name = dev.query('*IDN?')
 while not 'SMP02' in name:
     time.sleep(0.1)
     name = dev.query('*IDN?')
 print('connected to ' + name)
-try:    
+try:
     freq = Quantity(sys.argv[1], 'Hz')
     power = Quantity(sys.argv[2], 'dBm')
     state = sys.argv[3].upper()

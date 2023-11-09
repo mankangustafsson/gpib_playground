@@ -2,6 +2,7 @@ from enum import Enum, auto
 import pyvisa
 import time
 
+
 class Device:
     class Type(Enum):
         COUNTER = auto(),
@@ -11,47 +12,47 @@ class Device:
         VNA = auto(),
         SPECTRUM_ANALYZER = auto(),
         ATTENUATOR_DRIVER = auto()
-        
+
     def __init__(self, address, name, deviceType,
-                 idQuery = '*IDN?', term = None):
+                 idQuery='*IDN?', term=None):
         self.address = address
         self.name = name
         self.deviceType = deviceType
         self.idQuery = idQuery
         self.term = term
-            
-    def connect(self, verbose = True):
+
+    def connect(self, verbose=True):
         rm = pyvisa.ResourceManager()
-        baudRate = None
         dev = None
         try:
             if self.address.startswith('ASRL'):
-                dev = rm.open_resource(self.address, baud_rate = 115200)
+                dev = rm.open_resource(self.address, baud_rate=115200)
             else:
                 dev = rm.open_resource(self.address)
-        
+
             dev.timeout = 5000
             if self.term is not None:
                 dev.read_termination = self.term
                 dev.write_termination = self.term
             if verbose:
                 print('Connecting to ' + self.address + '...',
-                      end ='', flush = True)
+                      end='', flush=True)
             name = dev.query(self.idQuery)
             while not self.name in name:
                 time.sleep(0.1)
                 name = dev.query(self.idQuery)
-            if verbose: print('connected to ' + name, end = '')
+            if verbose:
+                print('connected to ' + name, end='')
             return dev
         except:
             return dev
 
-class Lab:    
 
+class Lab:
     devices = [Device('GPIB1::11::INSTR', '53131A',
                       Device.Type.COUNTER, '*IDN?', '\n'),
                Device('GPIB0::7::INSTR', '54820A',
-                      Device.Type.OSCILLOSCOPE, term = '\n'),
+                      Device.Type.OSCILLOSCOPE, term='\n'),
                Device('GPIB0::13::INSTR', 'HP438A',
                       Device.Type.POWER_METER, '?ID', '\r\n'),
                Device('GPIB0::16::INSTR', '8753',
@@ -59,27 +60,27 @@ class Lab:
                Device('GPIB1::16::INSTR', '8722',
                       Device.Type.VNA),
                Device('GPIB0::19::INSTR', 'E44',
-                      Device.Type.RF_GEN, term = '\n'),
+                      Device.Type.RF_GEN, term='\n'),
                Device('ASRL51::INSTR', 'HP11713',
-                      Device.Type.ATTENUATOR_DRIVER, term = '\n'),
+                      Device.Type.ATTENUATOR_DRIVER, term='\n'),
                Device('USB0::0xF4EC::0x1300::SSA3XLBC3R0195::INSTR', 'SSA3032',
-                      Device.Type.SPECTRUM_ANALYZER, term = '\n')]
-    
+                      Device.Type.SPECTRUM_ANALYZER, term='\n')]
+
     @staticmethod
-    def connectByType(deviceType, verbose = True, hint = None):
+    def connectByType(deviceType, verbose=True, hint=None):
         for d in Lab.devices:
             if d.deviceType == deviceType:
                 if hint is None or hint == d.name:
                     return d.connect(verbose)
         return None
-    
+
     @staticmethod
     def isKnownDevice(address):
         for d in Lab.devices:
             if address == d.address:
                 return d
         return None
-    
+
     @staticmethod
     def scanDevices():
         rm = pyvisa.ResourceManager()
@@ -92,6 +93,7 @@ class Lab:
                 dev.close()
                 n += 1
             elif address not in ['GPIB0::17::INSTR',
+                                 'GPIB1::17::INSTR',
                                  'ASRL1::INSTR', 'ASRL2::INSTR',
                                  'ASRL3::INSTR', 'ASRL4::INSTR',
                                  'GPIB1::3::1::INSTR',
@@ -123,7 +125,7 @@ class Lab:
                                  'GPIB1::3::27::INSTR',
                                  'GPIB1::3::28::INSTR',
                                  'GPIB1::3::29::INSTR',
-                                 'GPIB1::3::30::INSTR']:                
-                print('Unknown device on GPIB bus: %s' %address)
+                                 'GPIB1::3::30::INSTR']:
+                print(f'Unknown device on GPIB bus: {address}')
         if n == 0:
             print('No known devices found')
