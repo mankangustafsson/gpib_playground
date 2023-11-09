@@ -40,6 +40,7 @@ parser.add_argument('--file', default = 'register_values.json',
                     help = 'file to read or write data from or to')
 args = parser.parse_args()
 #print(args)
+the_range = valid_range(args.start, args.stop)
 
 rm = pyvisa.ResourceManager()
 #print(rm.list_resources())
@@ -51,7 +52,6 @@ rf.query(':SYST:PRES; *OPC?;')
 id = rf.query('*IDN?')
 print(f'Connected to: {id}')
 
-the_range = valid_range(args.start, args.stop)
 if args.command == 'backup':
     print(f'Backing up entry {args.start} to {args.stop} into {args.file}...')
     data = {}

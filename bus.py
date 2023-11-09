@@ -4,7 +4,7 @@ import sys
 rm = pyvisa.ResourceManager()
 print(rm.list_resources())
 n = 0
-for r in rm.list_resources(query='(GPIB|USB)(0|1)::?*::INSTR'):
+for r in rm.list_resources(query='(GPIB|USB)(0|1|2)::?*::INSTR'):
     if r not in ['GPIB0::17::INSTR', 'GPIB1::17::INSTR',
                  'GPIB1::3::1::INSTR',
                  'GPIB1::3::2::INSTR',
