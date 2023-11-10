@@ -3,7 +3,7 @@ from Lab import Lab
 
 import time
 
-dev = Lab.connectByType(Device.Type.VNA)
+dev = Lab.connectByType(Device.Type.VNA, hint='8753')
 
 print('Presetting the analyzer...please wait')
 dev.write('OPC?;PRES;')

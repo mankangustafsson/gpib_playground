@@ -4,9 +4,9 @@ from Probe import probes
 
 from quantiphy import Quantity
 
-dev = Lab.connectByType(Device.Type.VNA)
+dev = Lab.connectByType(Device.Type.VNA, hint='8753')
 
-for p in probes:
+for p in [probes[0], probes[1]]:
     sensor = 'A' if p.name == '8482A' else 'B'
     print('Adding probe %s as sensor %s' % (p.name, sensor))
     cmd = 'CALFSEN%s CLEL' % sensor

@@ -179,7 +179,7 @@ parser.add_argument('-o', type = argparse.FileType('wb'),
                     help = 'file to use for save and default command')
 args = parser.parse_args()
 
-dev = Lab.connectByType(Device.Type.VNA)
+dev = Lab.connectByType(Device.Type.VNA, hint='8753')
 
 if args.command == 'save':
       if args.o is not None:
