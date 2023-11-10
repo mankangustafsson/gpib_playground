@@ -1,7 +1,7 @@
 import argparse
 import binascii
 
-from quantiphy import Quantity, QuantityError
+from quantiphy import Quantity
 import serial
 
 
@@ -11,7 +11,7 @@ def valid_frequency(f):
         if frequency < 0 or frequency > 65535:
             raise ValueError(frequency)
         return frequency
-    except QuantityError:
+    except ValueError:
         msg = '%s is not a valid frequency' % f
         raise argparse.ArgumentTypeError(msg)
 

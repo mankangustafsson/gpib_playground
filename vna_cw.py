@@ -1,6 +1,6 @@
 from Devices import Device
 from Lab import Lab
-from quantiphy import Quantity, QuantityError
+from quantiphy import Quantity
 
 import argparse
 
@@ -9,7 +9,7 @@ def valid_frequency(f):
     try:
         frequency = Quantity(f, 'Hz')
         return frequency
-    except QuantityError:
+    except ValueError:
         raise argparse.ArgumentTypeError(f'{f} is not a valid frequency')
 
 
@@ -30,7 +30,7 @@ def valid_power(p):
         return power
     except argparse.ArgumentTypeError:
         raise
-    except QuantityError:
+    except ValueError:
         raise argparse.ArgumentTypeError(f'{p}%s is not a power')
 
 
@@ -51,7 +51,6 @@ if __name__ == "__main__":
 
     dev = Lab.connectByType(Device.Type.VNA, hint=args.u, verbose=True)
     if dev is None:
-        print('No VNA found')
         exit(1)
 
     q = f'{args.p}; POWE {args.d}; CWFREQ {args.f}'
