@@ -52,5 +52,3 @@ class Device:
         except:
             print(f'Failed to connect to {self.address}')
             return self.dev
-
-

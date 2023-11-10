@@ -1,7 +1,6 @@
 from Devices import Device
 from Lab import Lab
 
-import sys
 import time
 
 dev = Lab.connectByType(Device.Type.VNA)

@@ -1,10 +1,6 @@
-* Move probes array into Lab class
-
-* flake8 fixing
-
 * common valid functions
 
 * turn 8753/8720 scripts into vna ones support multiple models
 
-* calkit, support multiple default kits
+* calkit, support multiple default kits and multiple VNAs
 

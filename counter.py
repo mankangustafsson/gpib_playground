@@ -2,7 +2,7 @@ from Devices import Device
 from Lab import Lab
 
 from quantiphy import Quantity
-import time
+
 
 dev = Lab.connectByType(Device.Type.COUNTER)
 dev.write('*RST')
