@@ -6,9 +6,6 @@ class AttenuatorDriver:
         self.dev = Lab.connectByType(Device.Type.ATTENUATOR_DRIVER, verbose)
         self.verbose = verbose
 
-    def __del__(self):
-        self.dev.close()
-
     def preset(self):
         self.dev.write('PR')
 

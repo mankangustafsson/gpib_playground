@@ -6,9 +6,10 @@ from time import time
 
 if __name__ == "__main__":
     try:
-        rf = RfGen(False)
-        pm = Lab.connectByType(Device.Type.POWER_METER, False)
-
+        rf = RfGen(verbose=False)
+        pm = Lab.connectByType(Device.Type.POWER_METER, verbose=False)
+        if rf is None or pm is None:
+            exit(1)
         probe = probes[0]  # HP8481A, sensor A
 
         for p in range(-30, 20):

@@ -10,10 +10,6 @@ class PowerMeter:
         self.dev = Lab.connectByType(Device.Type.POWER_METER, verbose)
         self.verbose = verbose
 
-    def __del__(self):
-        if self.dev:
-            self.dev.close()
-
     @staticmethod
     def _checkSensor(sensor):
         if sensor != 'A' and sensor != 'B':

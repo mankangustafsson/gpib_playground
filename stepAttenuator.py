@@ -22,7 +22,6 @@ if __name__ == "__main__":
     # print(args)
 
     ad = AttenuatorDriver()
-
     for cmd in args.commands:
         if cmd == 'get':
             print('%d dB' % ad.getAttenuation())
