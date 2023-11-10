@@ -11,7 +11,8 @@ class Device:
         RF_GEN = auto(),
         VNA = auto(),
         SPECTRUM_ANALYZER = auto(),
-        ATTENUATOR_DRIVER = auto()
+        ATTENUATOR_DRIVER = auto(),
+        PSU = auto()
 
     def __init__(self, address, name, deviceType,
                  idQuery='*IDN?', term=None):
@@ -45,6 +46,7 @@ class Device:
                 print('connected to ' + name, end='')
             return dev
         except:
+            print(f'Failed to connect to {self.address}')
             return dev
 
 
@@ -55,16 +57,22 @@ class Lab:
                       Device.Type.OSCILLOSCOPE, term='\n'),
                Device('GPIB0::13::INSTR', 'HP438A',
                       Device.Type.POWER_METER, '?ID', '\r\n'),
+               Device('GPIB0::5::INSTR', 'E3631',
+                      Device.Type.PSU),
                Device('GPIB0::16::INSTR', '8753',
                       Device.Type.VNA),
                Device('GPIB1::16::INSTR', '8722',
                       Device.Type.VNA),
                Device('GPIB0::19::INSTR', 'E44',
                       Device.Type.RF_GEN, term='\n'),
+               Device('GPIB1::28::INSTR', 'SMP02',
+                      Device.Type.RF_GEN),
                Device('ASRL51::INSTR', 'HP11713',
                       Device.Type.ATTENUATOR_DRIVER, term='\n'),
                Device('USB0::0xF4EC::0x1300::SSA3XLBC3R0195::INSTR', 'SSA3032',
-                      Device.Type.SPECTRUM_ANALYZER, term='\n')]
+                      Device.Type.SPECTRUM_ANALYZER, term='\n'),
+               Device('GPIB1::18::INSTR', 'E4407',
+                      Device.Type.SPECTRUM_ANALYZER)]
 
     @staticmethod
     def connectByType(deviceType, verbose=True, hint=None):
