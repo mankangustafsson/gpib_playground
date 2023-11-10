@@ -1,7 +1,4 @@
-* Move probes array into Lab class, move Lab to its own file
-
-* Peak power read from spectrum analyzer
-6 * 40 *60
+* Move probes array into Lab class
 
 * flake8 fixing
 
@@ -11,6 +8,3 @@
 
 * calkit, support multiple default kits
 
-* support multiple RF gens
-
-* support multiple specs

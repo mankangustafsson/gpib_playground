@@ -1,4 +1,5 @@
-from Devices import *
+from Devices import Device
+from Lab import Lab
 
 import argparse
 import array

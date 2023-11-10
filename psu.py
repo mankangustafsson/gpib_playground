@@ -1,4 +1,5 @@
-from Devices import Device, Lab
+from Devices import Device
+from Lab import Lab
 
 
 if __name__ == "__main__":

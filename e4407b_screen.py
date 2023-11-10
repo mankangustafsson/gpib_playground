@@ -1,4 +1,6 @@
-from Devices import Device, Lab
+from Devices import Device
+from Lab import Lab
+
 from datetime import datetime
 
 if __name__ == "__main__":

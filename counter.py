@@ -1,4 +1,6 @@
-from Devices import *
+from Devices import Device
+from Lab import Lab
+
 from quantiphy import Quantity
 import time
 
