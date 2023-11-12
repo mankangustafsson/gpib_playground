@@ -14,6 +14,8 @@ class Probe:
     def get_cf(self, frequency):
         prev_f = None
         prev_cf = None
+        if frequency is None:
+            frequency = 1.0
         for f, cf in self.cf_table.items():
             if frequency == f:
                 return cf
