@@ -12,28 +12,35 @@ class Probe:
         return 'Name: %s Ref CF: %5.1f%%' % (self.name, self.ref_cf)
 
     def get_cf(self, frequency):
-        last_f = None
-        last_cf = None
+        prev_f = None
+        prev_cf = None
         for f, cf in self.cf_table.items():
             if frequency == f:
                 return cf
-            if frequency < f and last_f is None:
+            if frequency < f and prev_f is None:
                 print('Frequency %s is lower than probe %s lowest frequency %s'
                       % (str(Quantity(frequency, 'Hz')),
                          self.name, str(Quantity(f, 'Hz'))))
                 return cf
             if frequency > f:
-                last_f = f
-                last_cf = cf
+                prev_f = f
+                prev_cf = cf
             else:
-                a = (cf - last_cf) / (f - last_f)
+                a = (cf - prev_cf) / (f - prev_f)
                 b = cf - f * a
                 return frequency * a + b
         print('Frequency %s is higher than probe %s highest frequency %s'
               % (str(Quantity(frequency, 'Hz')),
                  self.name, str(Quantity(f, 'Hz'))))
-        return last_cf
+        return prev_cf
 
+    def print_cal_table(self):
+        print('\nCalibration table')
+        print('-----------------')
+        for f, cf in self.cf_table.items():
+            print('{:9q} {:7q}'.format(Quantity(f, 'Hz'), Quantity(cf, '%')))
+        print('-----------------\n')
+        
 
 probes = [Probe('8481A', 100.0, 0.0, dict([(00.01E+9, 98.2),  # HP E4436B/8482A
                                            (00.03E+9, 99.5),  # HP E4436B/8482A

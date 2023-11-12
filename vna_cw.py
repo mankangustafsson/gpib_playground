@@ -49,11 +49,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # print(args)
 
-    dev = Lab.connectByType(Device.Type.VNA, hint=args.u, verbose=True)
+    dev = Lab.connectByType(Device.Type.VNA, hint=args.u, verbose=False)
     if dev is None:
         exit(1)
 
     q = f'{args.p}; POWE {args.d}; CWFREQ {args.f}'
-    print(q)
+    #print(q)
     dev.write(q)
     dev.close()

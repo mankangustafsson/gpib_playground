@@ -127,12 +127,7 @@ for cmd in args.commands:
         n = 1
         for p in probes:
             print(f'Probe {n}: {p}')
-            print('\nCalibration table')
-            print('-----------------')
-            for f, cf in p.cf_table.items():
-                print('{:9q} {:7q}'.format(Quantity(f, 'Hz'),
-                                           Quantity(cf, '%')))
-            print('-----------------\n')
+            p.print_cal_table()
             n += 1
     else:
         pm.test_port(cmd == 'oc1')

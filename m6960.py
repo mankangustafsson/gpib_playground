@@ -2,7 +2,7 @@ import argparse
 from quantiphy import Quantity
 from Probe import Probe
 import pyvisa
-
+import time
 
 def valid_commands(cmd):
     if cmd.lower() not in ['preset', 'init', 'read', 'probe']:
@@ -56,42 +56,46 @@ if not args.commands:
     exit(0)
 
 rm = pyvisa.ResourceManager()
-print(rm.list_resources())
-pm = rm.open_resource('USB0::FOO::INSTR')
-pm.timeout = 2000
+# print(rm.list_resources())
+pm = rm.open_resource('GPIB2::13::INSTR')
+pm.timeout = 3000
 pm.read_termination = '\r\n'
 pm.write_termination = '\r\n'
-print(pm.query('RS'))
 
 for cmd in args.commands:
     if cmd == 'init' or cmd == 'preset':
-        pm.write('RE;SQ0;UN0;SRA;AV200;DCA')
+#        pm.write('RE')
+#        print('1')
+#        time.sleep(1)
+        pm.write('SQ0')
+        print('2')
+        time.sleep(1)
+        pm.write('AV200E')
+        print('3')
+        time.sleep(1)
+        pm.write('LF4.7E')
+        print('4')
+        time.sleep(1)
+        print(pm.query('RS'))
     elif cmd == 'read':
         cal_factor = 100.0
         if args.f is None:
             print('No frequency specified, using calibration factor 100')
-        else:
-            cal_factor = probe.get_cf(args.f)
-        cf = ''
-        if cal_factor == 100.0:
-            cf = 'CFA'
-        else:
-            cf = f'CF{cal_factor:2.2f}E'
-        power = pm.query(f'{cf};TR00')
-        # pm.query_ascii_values
-        # print(power)
-        if power[0] == 'V' and power[2] == 'D':
-            dbm = float(power[3:])
-            print(f'{dbm:.2f} dBm')
-        else:
-            print(power)
-    elif cmd == 'probe':
-        print(f'\nProbe {probe.name}')
-        print('\nCalibration table')
-        print('-----------------')
-        for f, cf in probe.cf_table.items():
-            print('{:9q} {:7q}'.format(Quantity(f, 'Hz'),
-                                       Quantity(cf, '%')))
-        print('-----------------\n')
 
+        cal_factor = probe.get_cf(args.f)
+        pm.write(f'CF{cal_factor:2.2f}E')
+        time.sleep(0.2)
+        pm.write('AV5E')
+        #pm.write('TR00')
+        for n in range(3):
+            time.sleep(10)
+            power = pm.query('')
+            if power[0] == 'V' and power[2] == 'D':
+                dbm = float(power[3:])
+                print(f'{args.f:10q};{dbm:.2f}; dBm')
+                break
+
+    elif cmd == 'probe':
+        print(f'\nProbe {probe}')
+        probe.print_cal_table()
 pm.close()
