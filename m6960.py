@@ -1,8 +1,10 @@
-import argparse
-from quantiphy import Quantity
 from Probe import Probe
+from args_validate import add_frequency
+
+import argparse
 import pyvisa
 import time
+
 
 def valid_commands(cmd):
     if cmd.lower() not in ['preset', 'init', 'read', 'probe']:
@@ -11,23 +13,11 @@ def valid_commands(cmd):
     return cmd.lower()
 
 
-def valid_frequency(f):
-    try:
-        frequency = Quantity(f, 'Hz')
-        return frequency
-    except ValueError:
-        msg = '%s is not a valid frequency' % f
-        raise argparse.ArgumentTypeError(msg)
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument('commands', type=valid_commands, nargs='*',
                     help='valid commands are: preset, init, read and'
                     ' probe. probe prints probe info')
-parser.add_argument('-f', type=valid_frequency, metavar='frequency',
-                    help='frequency to calculate calibration factor for. '
-                    'Decimal values with suffixes k, M and G is also allowed')
-
+add_frequency(parser)
 args = parser.parse_args()
 # print(args)
 
@@ -64,9 +54,9 @@ pm.write_termination = '\r\n'
 
 for cmd in args.commands:
     if cmd == 'init' or cmd == 'preset':
-#        pm.write('RE')
-#        print('1')
-#        time.sleep(1)
+        # pm.write('RE')
+        # print('1')
+        # time.sleep(1)
         pm.write('SQ0')
         print('2')
         time.sleep(1)
@@ -86,7 +76,7 @@ for cmd in args.commands:
         pm.write(f'CF{cal_factor:2.2f}E')
         time.sleep(0.2)
         pm.write('AV5E')
-        #pm.write('TR00')
+        # pm.write('TR00')
         for n in range(3):
             time.sleep(10)
             power = pm.query('')

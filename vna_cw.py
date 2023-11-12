@@ -1,16 +1,9 @@
+from args_validate import add_frequency
 from Devices import Device
 from Lab import Lab
+
 from quantiphy import Quantity
-
 import argparse
-
-
-def valid_frequency(f):
-    try:
-        frequency = Quantity(f, 'Hz')
-        return frequency
-    except ValueError:
-        raise argparse.ArgumentTypeError(f'{f} is not a valid frequency')
 
 
 def valid_port(p):
@@ -36,24 +29,25 @@ def valid_power(p):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', type=valid_frequency, metavar='frequency',
-                        help='desired frequency.'
-                        ' Decimal values with suffixes k, M and G is'
-                        ' also allowed')
+    add_frequency(parser)
     parser.add_argument('-p', type=valid_port, metavar='port',
                         default='1', help='desired output port')
     parser.add_argument('-d', type=valid_power, metavar='power',
                         default='-10.0', help='desired output power in dBm')
     parser.add_argument('-u', metavar='unit',
                         default='8722', help='unit to connect to')
+    parser.add_argument('-v', action='store_true', default=False,
+                        help='enable verbose output')
     args = parser.parse_args()
-    # print(args)
+    if args.v:
+        print(args)
 
-    dev = Lab.connectByType(Device.Type.VNA, hint=args.u, verbose=False)
+    dev = Lab.connectByType(Device.Type.VNA, hint=args.u, verbose=args.v)
     if dev is None:
         exit(1)
 
     q = f'{args.p}; POWE {args.d}; CWFREQ {args.f}'
-    #print(q)
+    if args.v:
+        print(q)
     dev.write(q)
     dev.close()

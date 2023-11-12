@@ -1,16 +1,8 @@
+from args_validate import add_frequency
 from RfGen import RfGen
 
 import argparse
 from quantiphy import Quantity
-
-
-def valid_frequency(f):
-    try:
-        frequency = Quantity(f, 'Hz')
-        return frequency
-    except:
-        msg = '%s is not a valid frequency' % f
-        raise argparse.ArgumentTypeError(msg)
 
 
 def valid_power(p):
@@ -40,10 +32,7 @@ if __name__ == "__main__":
     parser.add_argument('command', type=valid_commands, nargs='?',
                         default='on',
                         help='valid commands are: on, off. Controls RF output')
-    parser.add_argument('-f', type=valid_frequency, metavar='frequency',
-                        help='desired frequency.'
-                        ' Decimal values with suffixes k, M and G is'
-                        ' also allowed')
+    add_frequency(parser)
     parser.add_argument('-p', type=valid_power, metavar='power',
                         help='desired output power in dBm')
     args = parser.parse_args()

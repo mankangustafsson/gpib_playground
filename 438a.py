@@ -1,7 +1,8 @@
-import argparse
-from quantiphy import Quantity
+from args_validate import add_frequency
 from PowerMeter import PowerMeter
 from Probe import probes
+
+import argparse
 import sys
 
 
@@ -32,15 +33,6 @@ def valid_offset(o):
         raise argparse.ArgumentTypeError(msg)
 
 
-def valid_frequency(f):
-    try:
-        frequency = Quantity(f, 'Hz')
-        return frequency
-    except:
-        msg = '%s is not a valid frequency' % f
-        raise argparse.ArgumentTypeError(msg)
-
-
 def valid_unit(u):
     if u.lower() in ['w', 'watt']:
         return 'W'
@@ -59,13 +51,12 @@ parser.add_argument('-a', type=int, choices=[1, 2, 3, 4], metavar='probe_id',
                     help='associates probe_id with sensor A')
 parser.add_argument('-b', type=int, choices=[1, 2, 3, 4], metavar='probe_id',
                     help='associates probe_id with sensor B')
-parser.add_argument('-f', type=valid_frequency, metavar='frequency',
-                    help='frequency to calculate calibration factor for. '
-                    'Decimal values with suffixes k, M and G is also allowed')
-parser.add_argument('-f1', type=valid_frequency, metavar='frequency',
-                    help='frequency to use for probe 1, overrides -f')
-parser.add_argument('-f2', type=valid_frequency, metavar='frequency',
-                    help='frequency to use for probe 2, overrides -f')
+add_frequency(parser,
+              help_prefix='Frequency to calculate calibration factor for.')
+add_frequency(parser, flag='-f1',
+              help_prefix='Frequency to use for probe 1, overrides -f.')
+add_frequency(parser, flag='-f2',
+              help_prefix='Frequency to use for probe 2, overrides -f.')
 parser.add_argument('-o', type=valid_offset, metavar='offset',
                     help='offset to add to read values')
 parser.add_argument('-oa', type=valid_offset, metavar='offset',

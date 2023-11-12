@@ -4,6 +4,7 @@
 @REM flake8.exe 8753_calkit.py
 @flake8.exe 8753_power_sensors.py
 @flake8.exe 8753_test53.py
+@flake8.exe args_validate.py
 @flake8.exe AttenuatorDriver.py
 @flake8.exe bus.py
 @flake8.exe counter.py
@@ -11,6 +12,7 @@
 @flake8.exe e4407b_screen.py
 @flake8.exe e44xx_cw.py
 @flake8.exe Lab.py
+@flake8.exe m6960.py
 @flake8.exe notch.py
 @flake8.exe PowerMeter.py
 @flake8.exe Probe.py

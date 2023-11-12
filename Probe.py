@@ -42,7 +42,7 @@ class Probe:
         for f, cf in self.cf_table.items():
             print('{:9q} {:7q}'.format(Quantity(f, 'Hz'), Quantity(cf, '%')))
         print('-----------------\n')
-        
+
 
 probes = [Probe('8481A', 100.0, 0.0, dict([(00.01E+9, 98.2),  # HP E4436B/8482A
                                            (00.03E+9, 99.5),  # HP E4436B/8482A
