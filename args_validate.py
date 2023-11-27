@@ -14,4 +14,4 @@ def add_frequency(parser, flag='-f', default='1G', help_prefix=''):
     parser.add_argument(flag, type=valid_frequency, metavar='frequency',
                         default=default, help='desired frequency. '
                         f'{help_prefix} Decimal values with suffixes '
-                        'k, M and G is also allowed')    
+                        'k, M and G is also allowed')

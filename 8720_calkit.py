@@ -58,7 +58,7 @@ def set_default_kit(genders):
     dev.write('C2 3')
     dev.write('C3 -0.02')
     dev.write('MINF 0')
-    dev.write('MAXF 20E+9')
+    dev.write('MAXF 40E+9')
     dev.write('STDD')
     print('done')
     
@@ -73,7 +73,7 @@ def set_default_kit(genders):
     dev.write('C2 -8')
     dev.write('C3 0.36')
     dev.write('MINF 0')
-    dev.write('MAXF 20E+9')
+    dev.write('MAXF 40E+9')
     dev.write('STDD')
     print('done')
 
@@ -98,7 +98,7 @@ def set_default_kit(genders):
     dev.write('C2 0.0')
     dev.write('C3 0.0')
     dev.write('MINF 0')
-    dev.write('MAXF 20E+9')
+    dev.write('MAXF 40E+9')
     dev.write('STDD')
     print('done')
     if genders == 'MM':
@@ -123,7 +123,7 @@ def set_default_kit(genders):
         dev.write('OFSD 0.0E-12')
         dev.write('OFSL 0.0E+9')
     dev.write('MINF 0')
-    dev.write('MAXF 20E+9')
+    dev.write('MAXF 40E+9')
     dev.write('STDD')
     print('done')
 
@@ -138,7 +138,7 @@ def set_default_kit(genders):
     dev.write('C2 -259.364278')
     dev.write('C3 -1,908106')
     dev.write('MINF 0')
-    dev.write('MAXF 20E+9')
+    dev.write('MAXF 40E+9')
     dev.write('STDD')
     print('done')
 
@@ -153,7 +153,7 @@ def set_default_kit(genders):
     dev.write('C2 50.499163')
     dev.write('C3 -1.831400')
     dev.write('MINF 0')
-    dev.write('MAXF 20E+9')
+    dev.write('MAXF 40E+9')
     dev.write('STDD')
     print('done')
       
@@ -187,7 +187,7 @@ dev = rm.open_resource('GPIB1::16::INSTR')
 dev.timeout = 5000
 print('connecting to GPIB1::16::INSTR...', end = '', flush = True)
 name = dev.query('*IDN?');
-while not '8720C' in name:
+while not '8722' in name:
     time.sleep(0.1)
     name = dev.query('*IDN?');
 print('connected to ' + name)
