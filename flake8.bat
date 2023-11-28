@@ -7,6 +7,7 @@
 @flake8.exe args_validate.py
 @flake8.exe AttenuatorDriver.py
 @flake8.exe bus.py
+@flake8.exe CalKit.py
 @flake8.exe counter.py
 @flake8.exe Devices.py
 @flake8.exe e4407b_screen.py

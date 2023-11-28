@@ -1,4 +1,5 @@
-from Devices import *
+from Devices import Device
+from Lab import Lab
 
 import argparse
 import array
@@ -44,7 +45,7 @@ def save_kit(outputFile, beep = False):
 
 def set_default_kit(genders):
     print('Loading default %s cal kit to VNA...' % genders, flush = True)
-    dev.write('CALKN50') # To get the class definitations like we want
+    dev.write('CALKN50') # To get the class definitions like we want
     dev.write('MODI1')
     
     print('Short male (ZV-Z132)...', end ='', flush = True)
@@ -181,16 +182,10 @@ parser.add_argument('-o', type = argparse.FileType('wb'),
                     metavar = 'output_file', nargs = '?',
                     help = 'file to use for save and default command')
 args = parser.parse_args()
-rm = pyvisa.ResourceManager()
 
-dev = rm.open_resource('GPIB1::16::INSTR')
-dev.timeout = 5000
-print('connecting to GPIB1::16::INSTR...', end = '', flush = True)
-name = dev.query('*IDN?');
-while not '8722' in name:
-    time.sleep(0.1)
-    name = dev.query('*IDN?');
-print('connected to ' + name)
+dev = Lab.connectByType(Device.Type.VNA, hint='8722', verbose=True)
+if dev is None:
+    exit(1)
 
 if args.command == 'save':
       if args.o is not None:
@@ -208,4 +203,3 @@ elif args.command == 'default':
             save_kit(args.o)
 
 dev.close()
-rm.close()

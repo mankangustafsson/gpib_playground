@@ -45,7 +45,7 @@ def save_kit(outputFile, beep = False):
 
 def set_default_kit(genders):
     print('Loading default %s cal kit to VNA...' % genders, flush = True)
-    dev.write('CALKN50') # To get the class definitations like we want
+    dev.write('CALKN50') # To get the class definitions like we want
     dev.write('MODI1')
     
     print('Short male...', end ='', flush = True)
