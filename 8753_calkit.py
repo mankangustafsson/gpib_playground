@@ -8,7 +8,7 @@ import sys
 import time
 
 def valid_commands(cmd):
-    if cmd.lower() not in ['load', 'save', 'default']:
+    if cmd.lower() not in ['load', 'save', 'default', 'kits']:
         msg = '%s is not a valid command' % cmd
         raise argparse.ArgumentTypeError(msg)
     return cmd.lower()
@@ -44,13 +44,16 @@ def save_kit(outputFile, beep = False):
           dev.write('EMIB; SOFR')
       print('..done.')
 
-def set_default_kit(genders):
+def set_default_kit(kit, genders):
     sma_6ghz.load(dev, genders)
-    
+
+def print_kits():
+    sma_6ghz.print_kit()
+
 parser = argparse.ArgumentParser()
 parser.add_argument('command', type = valid_commands, nargs='?',
                     default = 'save',
-                    help = 'valid commands are: load, save and default. '
+                    help = 'valid commands are: load, save, default and kits. '
                     'save is the default')
 parser.add_argument('genders', type = valid_genders, nargs='?',
                     default = 'MM',
@@ -64,23 +67,31 @@ parser.add_argument('-i', type = argparse.FileType('rb'),
 parser.add_argument('-o', type = argparse.FileType('wb'),
                     metavar = 'output_file', nargs = '?',
                     help = 'file to use for save and default command')
+parser.add_argument('-u', metavar='unit',
+                    default='8722', help='unit to connect to: 8753 or 8722')
+parser.add_argument('-k', metavar='kit',
+                    default='3.5mm', help='calkit to use as default: '
+                    'SMA or 3.5mm')
+
 args = parser.parse_args()
 
-dev = Lab.connectByType(Device.Type.VNA, hint='8753')
+dev = Lab.connectByType(Device.Type.VNA, hint=args.u)
 
 if args.command == 'save':
-      if args.o is not None:
-            save_kit(args.o, True)
-      else:
-            print('save command requires -o argument')
+    if args.o is not None:
+        save_kit(args.o, True)
+    else:
+        print('save command requires -o argument')
 elif args.command == 'load':
-      if args.i is not None:
-            load_kit(args.i)
-      else:
-            print('load command requires -i argument')
+    if args.i is not None:
+        load_kit(args.i)
+    else:
+        print('load command requires -i argument')
 elif args.command == 'default':
-      set_default_kit(args.genders)
-      if args.o is not None:
-            save_kit(args.o)
+    set_default_kit(args.k, args.genders)
+    if args.o is not None:
+        save_kit(args.o)
+elif args.command == 'kits':
+    print_kits()
 
 dev.close()

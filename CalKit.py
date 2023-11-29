@@ -25,6 +25,17 @@ class Standard:
         self.sex = sex
         self.cmds = cmds
 
+    def get_delay(self):
+        for c in self.cmds:
+            s = c.split(' ', 1)
+            if s[0] == 'OFSD':
+                return Quantity(s[1], 's')
+        return Quantity(0.0, 's')
+
+    def __str__(self):
+        name = '' if self.name is None else f'{self.name:10} '
+        return f'{name}{self.s_type:5} {self.sex:6} delay: {self.get_delay():8}'
+
     def load(self, dev):
         name = '' if self.name is None else f' ({self.name}'
         print(f'{self.s_type} {self.sex}{name}...', end='', flush=True)
@@ -51,6 +62,10 @@ class CalKit:
                 return s
         return None
 
+    def __str__(self):
+        fs = Quantity(self.max_freq, 'Hz')
+        return f'{self.name} {fs}'
+
     def __load_standard(self, dev, s_type, sex=None):
         s = self.get_standard(s_type, sex)
         if s is None and s_type != Standard.Type.THRU:
@@ -69,9 +84,17 @@ class CalKit:
         dev.write('STDD')
         print('done')
 
+    def print_kit(self):
+        header = f'{self}'
+        print(header)
+        line = "-" * len(header)
+        print(line)
+        for s in self.standards:
+            print(s)
+        print(line)
+
     def load(self, dev, genders):
-        fs = Quantity(self.max_freq, 'Hz')
-        print(f'Loading {self.name} {fs} {genders} '
+        print(f'Loading {self} {genders} '
               'cal kit to VNA...', flush=True)
         dev.write('CALKN50')  # To get the class definitions like we want
         dev.write('MODI1')
@@ -97,7 +120,7 @@ class CalKit:
         dev.write(f'LABK "{kitname}"')
         dev.write('KITD')
         dev.write('OPC?; SAVEUSEK; SOFR')
-        print(f'{self.name} {fs} cal kit loaded as {kitname}')
+        print(f'{self.name} cal kit loaded as {kitname}')
 
 
 # SMA Rosenberger parts 6GHz
