@@ -1,4 +1,3 @@
-from CalKit import calkits
 from Devices import Device
 from Lab import Lab
 
@@ -50,7 +49,7 @@ def save_kit(outputFile, beep=False):
 
 
 def set_default_kit(kit, genders):
-    for ck in calkits:
+    for ck in Lab.calkits:
         if ck.short_name == kit:
             ck.load(dev, genders)
             return
@@ -58,7 +57,7 @@ def set_default_kit(kit, genders):
 
 
 def print_kits():
-    for ck in calkits:
+    for ck in Lab.calkits:
         ck.print_kit()
         if not ck.verify():
             print('Calkit {ck} has duplicate standards')
