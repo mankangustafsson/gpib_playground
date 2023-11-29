@@ -1,6 +1,6 @@
 from args_validate import add_frequency
+from Lab import Lab
 from PowerMeter import PowerMeter
-from Probe import probes
 
 import argparse
 import sys
@@ -115,10 +115,6 @@ for cmd in args.commands:
         offsets.append(args.ob if args.ob is not None else 0 if args.o is None else args.o)
         pm.read(sensors, probeList, frequencies, offsets, args.op, args.u)
     elif cmd == 'probes':
-        n = 1
-        for p in probes:
-            print(f'Probe {n}: {p}')
-            p.print_cal_table()
-            n += 1
+        Lab.printProbes()
     else:
         pm.test_port(cmd == 'oc1')

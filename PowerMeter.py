@@ -1,6 +1,5 @@
 from Devices import Device
 from Lab import Lab
-from Probe import probes
 
 from quantiphy import Quantity
 import time
@@ -18,7 +17,7 @@ class PowerMeter:
 
     @staticmethod
     def _checkProbe(probe):
-        if probe < 0 or probe >= len(probes):
+        if probe < 0 or probe >= len(Lab.probes):
             raise ValueError('Invalid probe')
 
     def preset(self):
@@ -34,9 +33,9 @@ class PowerMeter:
         if self.verbose:
             print('Zeroing and cal adjust of probe %u (%s) at sensor '
                   'port %s...'
-                  % (probe, probes[probe].name, sensor),
+                  % (probe, Lab.probes[probe].name, sensor),
                   end='', flush=True)
-        ref_cf = probes[probe].ref_cf
+        ref_cf = Lab.probes[probe].ref_cf
         send = 'DE %sE ZE CL%.1fEN KB%.1fEN OC1 LG %sP TR2 TR3' % (sensor,
                                                                    ref_cf,
                                                                    ref_cf,
@@ -44,7 +43,7 @@ class PowerMeter:
         self.dev.timeout = 20000
         dbm = self.dev.query_ascii_values(send)
         self.dev.timeout = 5000
-        while dbm[0] != probes[probe].cal_read:
+        while dbm[0] != Lab.probes[probe].cal_read:
             time.sleep(0.100)
             dbm = self.dev.query_ascii_values('TR2')
         self.dev.write('TR3 OC0')
@@ -90,7 +89,7 @@ class PowerMeter:
                 fi = n
                 if len(sensorList) > len(frequencyList):
                     fi -= 1
-                cf = probes[probesList[n]].get_cf(frequencyList[fi])
+                cf = Lab.probes[probesList[n]].get_cf(frequencyList[fi])
                 if self.verbose:
                     print('Set cal factor %.1f for probe %u in sensor %s at '
                           'frequency %s' % (cf, probesList[n],

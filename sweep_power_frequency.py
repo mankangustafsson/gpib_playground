@@ -1,7 +1,7 @@
-from RfGen import RfGen
 from Devices import Device
 from Lab import Lab
-from Probe import probes
+from RfGen import RfGen
+
 from quantiphy import Quantity
 from time import time
 
@@ -11,7 +11,7 @@ if __name__ == "__main__":
         pm = Lab.connectByType(Device.Type.POWER_METER, verbose=False)
         if rf is None or pm is None:
             exit(1)
-        probe = probes[0]  # HP8481A, sensor A
+        probe = Lab.probes[0]  # HP8481A, sensor A
 
         for p in range(-30, 20):
             if p % 10 == 0 or p % 3 == 0:

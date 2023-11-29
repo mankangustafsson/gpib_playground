@@ -7,14 +7,14 @@ import array
 
 def valid_commands(cmd):
     if cmd.lower() not in ['load', 'save', 'default', 'kits']:
-        msg = '%s is not a valid command' % cmd
+        msg = '%s is not a valid command!' % cmd
         raise argparse.ArgumentTypeError(msg)
     return cmd.lower()
 
 
 def valid_genders(genders):
     if genders.upper() not in ['MM', 'FF', 'M0', 'F0']:
-        msg = '%s is not a valid gender combo' % genders
+        msg = '%s is not a valid gender combo!' % genders
         raise argparse.ArgumentTypeError(msg)
     return genders.upper()
 
@@ -50,17 +50,12 @@ def save_kit(outputFile, beep=False):
 
 def set_default_kit(kit, genders):
     for ck in Lab.calkits:
+        if not ck.verify():
+            print('Calkit {ck} has duplicate standards!')
         if ck.short_name == kit:
             ck.load(dev, genders)
             return
     print(f'No kit named {kit} found!')
-
-
-def print_kits():
-    for ck in Lab.calkits:
-        ck.print_kit()
-        if not ck.verify():
-            print('Calkit {ck} has duplicate standards')
 
 
 parser = argparse.ArgumentParser()
@@ -94,17 +89,17 @@ if args.command == 'save':
     if args.o is not None:
         save_kit(args.o, True)
     else:
-        print('save command requires -o argument')
+        print('save command requires -o argument!')
 elif args.command == 'load':
     if args.i is not None:
         load_kit(args.i)
     else:
-        print('load command requires -i argument')
+        print('load command requires -i argument!')
 elif args.command == 'default':
     set_default_kit(args.k, args.genders)
     if args.o is not None:
         save_kit(args.o)
 elif args.command == 'kits':
-    print_kits()
+    Lab.printKits()
 if dev is not None:
     dev.close()
