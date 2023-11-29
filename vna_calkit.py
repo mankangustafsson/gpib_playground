@@ -60,6 +60,8 @@ def set_default_kit(kit, genders):
 def print_kits():
     for ck in calkits:
         ck.print_kit()
+        if not ck.verify():
+            print('Calkit {ck} has duplicate standards')
 
 
 parser = argparse.ArgumentParser()
@@ -105,5 +107,5 @@ elif args.command == 'default':
         save_kit(args.o)
 elif args.command == 'kits':
     print_kits()
-
-dev.close()
+if dev is not None:
+    dev.close()

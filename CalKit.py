@@ -63,7 +63,7 @@ class CalKit:
 
     def __str__(self):
         fs = Quantity(self.max_freq, 'Hz')
-        return f'{self.name} {fs}'
+        return f'{self.name} {self.short_name} {fs}'
 
     def __load_standard(self, dev, s_type, sex=None):
         s = self.get_standard(s_type, sex)
@@ -84,7 +84,7 @@ class CalKit:
         print('done')
 
     def print_kit(self):
-        header = f'{self}'
+        header = f'\n{self}'
         print(header)
         line = "-" * (len(header) + 11)
         print(line)
@@ -121,8 +121,14 @@ class CalKit:
         dev.write('OPC?; SAVEUSEK; SOFR')
         print(f'{self.name} cal kit loaded as {kitname}')
 
+    def verify(self):
+        stds = set()
+        for std in self.standards:
+            stds.add(f'{std.s_type}{std.sex}')
+        return len(self.standards) == len(stds)
 
-calkits = [CalKit(name='Rosenberger SMA', short_name='SMA', max_freq='6E+9',
+
+calkits = [CalKit(name='Rosenberger', short_name='SMA', max_freq='6E+9',
                   standards=[Standard(Standard.Type.SHORT,
                                       Standard.Sex.MALE,
                                       ['DEFS 1',
@@ -193,7 +199,7 @@ calkits = [CalKit(name='Rosenberger SMA', short_name='SMA', max_freq='6E+9',
                                        'C1 0',
                                        'C2 0',
                                        'C3 0'])]),
-           CalKit(name='R&S, HP, Pasternack 3.5mm', short_name='3.5mm',
+           CalKit(name='R&S, HP, Pasternack', short_name='3.5mm',
                   max_freq='40E+9',
                   standards=[Standard(Standard.Type.SHORT,
                                       Standard.Sex.MALE,
