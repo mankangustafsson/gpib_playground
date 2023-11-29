@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from quantiphy import Quantity
 
 
 class Standard:
@@ -50,7 +51,7 @@ class CalKit:
                 return s
         return None
 
-    def __load_standard(self, dev, s_type, sex):
+    def __load_standard(self, dev, s_type, sex=None):
         s = self.get_standard(s_type, sex)
         if s is None and s_type != Standard.Type.THRU:
             return
@@ -69,33 +70,34 @@ class CalKit:
         print('done')
 
     def load(self, dev, genders):
-        print(f'Loading {self.name} {self.max_freq} {genders} '
+        fs = Quantity(self.max_freq, 'Hz')
+        print(f'Loading {self.name} {fs} {genders} '
               'cal kit to VNA...', flush=True)
         dev.write('CALKN50')  # To get the class definitions like we want
         dev.write('MODI1')
 
-        self.load_standard(dev, Standard.Type.SHORT, Standard.Sex.MALE)
-        self.load_standard(dev, Standard.Type.OPEN, Standard.Sex.MALE)
+        self.__load_standard(dev, Standard.Type.SHORT, Standard.Sex.MALE)
+        self.__load_standard(dev, Standard.Type.OPEN, Standard.Sex.MALE)
         if genders in ['MM', 'M0']:
-            self.load_standard(dev, Standard.Type.LOAD, Standard.Sex.MALE)
+            self.__load_standard(dev, Standard.Type.LOAD, Standard.Sex.MALE)
         else:  # 'FF' & 'F0'
-            self.load_standard(dev, Standard.Type.LOAD, Standard.Sex.FEMALE)
+            self.__load_standard(dev, Standard.Type.LOAD, Standard.Sex.FEMALE)
 
         if genders == 'MM':
-            self.load_standard(dev, Standard.Type.THRU, Standard.Sex.MALE)
+            self.__load_standard(dev, Standard.Type.THRU, Standard.Sex.MALE)
         elif genders == 'FF':
-            self.load_standard(dev, Standard.Type.THRU, Standard.Sex.FEMALE)
+            self.__load_standard(dev, Standard.Type.THRU, Standard.Sex.FEMALE)
         else:
-            self.load_standard(dev, Standard.Type.THRU)
+            self.__load_standard(dev, Standard.Type.THRU)
 
-        self.load_standard(dev, Standard.Type.SHORT, Standard.Sex.FEMALE)
-        self.load_standard(dev, Standard.Type.OPEN, Standard.Sex.FEMALE)
+        self.__load_standard(dev, Standard.Type.SHORT, Standard.Sex.FEMALE)
+        self.__load_standard(dev, Standard.Type.OPEN, Standard.Sex.FEMALE)
 
         kitname = f'{self.short_name} ({genders})'
         dev.write(f'LABK "{kitname}"')
         dev.write('KITD')
         dev.write('OPC?; SAVEUSEK; SOFR')
-        print(f'{self.name} cal kit loaded as {kitname}')
+        print(f'{self.name} {fs} cal kit loaded as {kitname}')
 
 
 # SMA Rosenberger parts 6GHz
