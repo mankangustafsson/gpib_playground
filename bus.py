@@ -56,6 +56,6 @@ if __name__ == "__main__":
                 print('connected to ' + s)
                 n += 1
                 dev.close()
-                rm.close()
                 if n == 0:
                     print('No devices available on bus (GPIB|USB)(0|1)')
+    rm.close()
