@@ -11,6 +11,7 @@
 @flake8.exe e4407b_screen.py
 @flake8.exe e44xx_cw.py
 @flake8.exe e44xx_levelling.py
+@flake8.exe esa_yig_polynom.py
 @flake8.exe gen_8722_sweep.py
 @flake8.exe Lab.py
 @flake8.exe m6960.py
