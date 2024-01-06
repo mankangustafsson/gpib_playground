@@ -47,7 +47,7 @@ class Device:
                 time.sleep(0.1)
                 name = self.dev.query(self.idQuery)
             if verbose:
-                print('connected to ' + name, end='')
+                print('connected to ' + name)
             return self.dev
         except:
             print(f'Failed to connect to {self.address}')
