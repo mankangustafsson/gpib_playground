@@ -3,11 +3,19 @@ from Lab import Lab
 
 from datetime import datetime
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     dev = Lab.connectByType(Device.Type.SPECTRUM_ANALYZER, hint='E4407',
                             verbose=True)
     if dev is None:
         exit(1)
+
+    menu_on = dev.query(':DISP:MENU:STAT?').strip() == '1'
+    if menu_on:
+        dev.write(':DISP:MENU:STAT 0')
+
+    dev.write(':DISP:WIND:ANN:ALL 1')
+    dev.write(":DISP:ANN:TITL:DATA 'GPIB Playground by Mankan Gustafsson'")
 
     dev.write(":MMEM:DEL 'R:SCREEN.GIF';*CLS")
     for i in range(1):
@@ -23,3 +31,7 @@ if __name__ == "__main__":
             print(f'failed to save file: {filename}')
         print(filename)
         dev.write(":MMEM:DEL 'R:SCREEN.GIF'")
+
+    if menu_on:
+        dev.write(':DISP:MENU:STAT 1')
+    dev.close()
