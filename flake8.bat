@@ -8,8 +8,8 @@
 @flake8.exe CalKit.py
 @flake8.exe counter.py
 @flake8.exe Devices.py
-@flake8.exe e44xx_cw.py
-@flake8.exe e44xx_levelling.py
+@flake8.exe esg_cw.py
+@flake8.exe esg_levelling.py
 @flake8.exe esa_peak.py
 @flake8.exe esa_screen.py
 @flake8.exe esa_yig_polynom.py
@@ -22,7 +22,7 @@
 @flake8.exe psu.py
 @flake8.exe RfGen.py
 @flake8.exe smp_cw.py
-@flake8.exe ssa3032x.py
+@flake8.exe ssa3032x_screen.py
 @flake8.exe stepAttenuator.py
 @flake8.exe sweep_power_frequency.py
 @flake8.exe vna_calkit.py

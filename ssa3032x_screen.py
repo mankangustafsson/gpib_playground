@@ -15,7 +15,9 @@ args = parser.parse_args()
 
 # print(args)
 
-dev = Lab.connectByType(Device.Type.SPECTRUM_ANALYZER)
+dev = Lab.connectByType(Device.Type.SPECTRUM_ANALYZER, hint='SSA3032')
+if dev is None:
+    exit(1)
 
 print('Fetching BMP data...', end='', flush=True)
 dev.write(':HCOP:SDUM:DATA?')
@@ -37,11 +39,11 @@ if args.t:
     filename = datetime.now().strftime('%Y-%m-%d_%H%M%S-') + filename
 if not filename.lower().endswith('.png'):
     filename += '.png'
-print('Saving PNG data to file %s ...' % filename, end='', flush=True)
+print(f'Saving PNG data to file {filename}...', end='', flush=True)
 try:
     with Image.open(io.BytesIO(data)) as im:
         im.save(filename)
 except OSError:
-    print('failed to save file, %s' % filename)
+    print('failed to save file, {filename}')
 print('done.')
 dev.close()
