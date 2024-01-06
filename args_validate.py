@@ -10,7 +10,7 @@ def valid_frequency(f):
         raise argparse.ArgumentTypeError(f'{f} is not a valid frequency')
 
 
-def add_frequency(parser, flag='-f', default='1G', help_prefix=''):
+def add_frequency(parser, flag='-f', default=None, help_prefix=''):
     parser.add_argument(flag, type=valid_frequency, metavar='frequency',
                         default=default, help='desired frequency. '
                         f'{help_prefix} Decimal values with suffixes '
