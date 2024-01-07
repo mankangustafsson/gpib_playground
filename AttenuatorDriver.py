@@ -17,9 +17,7 @@ class AttenuatorDriver:
         if x == 120:
             x = 110
         y = db - x
-        cmd = 'ATT:BANK1:X%d' % x
-        cmd += ';ATT:BANK1:Y%d' % y
-        self.dev.write(cmd)
+        self.dev.write(f'ATT:BANK1:X{x};ATT:BANK1:Y{y}')
 
     def getAttenuation(self):
         x = self.dev.query('ATT:BANK1:X?')
@@ -28,11 +26,11 @@ class AttenuatorDriver:
 
     def __setRelay(self, op, relay):
         if relay not in [0, 9, 10]:
-            raise ValueError('Invalid relay: %d' % relay)
+            raise ValueError(f'Invalid relay: {relay}')
+        if relay == 0:
+            relay = 10
         r = relay + 100
-        if r == 100:
-            r += 10
-        self.dev.write(':ROUTe:%s (@%d)' % (op, r))
+        self.dev.write(f':ROUTe:{op} (@{r})')
 
     def openRelay(self, relay):
         self.__setRelay('OPEn', relay)

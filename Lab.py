@@ -101,7 +101,7 @@ class Lab:
                       Device.Type.RF_GEN, term='\n'),
                Device('GPIB1::28::INSTR', 'SMP02',
                       Device.Type.RF_GEN),
-               Device('ASRL1::INSTR', 'HP11713',
+               Device('ASRL12::INSTR', 'HP11713',
                       Device.Type.ATTENUATOR_DRIVER, term='\n'),
                Device('USB0::0xF4EC::0x1300::SSA3XLBC3R0195::INSTR', 'SSA3032',
                       Device.Type.SPECTRUM_ANALYZER, term='\n'),
