@@ -47,16 +47,18 @@ parser = argparse.ArgumentParser()
 parser.add_argument('commands', type=valid_commands, nargs='*',
                     help='valid commands are: preset, init, zero, read and'
                     ' probes. probes prints probe info')
-parser.add_argument('-a', type=int, choices=[1, 2, 3, 4], metavar='probe_id',
+parser.add_argument('-a', type=int, choices=[0, 1, 2, 3], metavar='probe_id',
                     help='associates probe_id with sensor A')
-parser.add_argument('-b', type=int, choices=[1, 2, 3, 4], metavar='probe_id',
+parser.add_argument('-b', type=int, choices=[0, 1, 2, 3], metavar='probe_id',
                     help='associates probe_id with sensor B')
 add_frequency(parser,
               help_prefix='Frequency to calculate calibration factor for.')
 add_frequency(parser, flag='-f1',
-              help_prefix='Frequency to use for probe 1, overrides -f.')
+              help_prefix='Frequency to use for probe in sensor A, '
+              'overrides -f.')
 add_frequency(parser, flag='-f2',
-              help_prefix='Frequency to use for probe 2, overrides -f.')
+              help_prefix='Frequency to use for probe in sensor B, '
+              'overrides -f.')
 parser.add_argument('-o', type=valid_offset, metavar='offset',
                     help='offset to add to read values')
 parser.add_argument('-oa', type=valid_offset, metavar='offset',
@@ -93,7 +95,7 @@ for cmd in args.commands:
             sys.exit(-1)
         sensor = 'A' if args.a is not None else 'B'
         probe = args.a if args.a is not None else args.b
-        pm.zero(sensor, probe - 1)
+        pm.zero(sensor, probe)
     elif cmd == 'read':
         sensors = []
         probeList = []
@@ -101,10 +103,10 @@ for cmd in args.commands:
         offsets = []
         if args.a is not None:
             sensors.append('A')
-            probeList.append(args.a - 1)
+            probeList.append(args.a)
         if args.b is not None:
             sensors.append('B')
-            probeList.append(args.b - 1)
+            probeList.append(args.b)
         if args.f1 is not None:
             frequencies.append(args.f1)
         if args.f2 is not None:

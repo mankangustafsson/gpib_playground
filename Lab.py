@@ -79,7 +79,7 @@ class Lab:
 
     @staticmethod
     def printProbes():
-        n = 1
+        n = 0
         for p in Lab.probes:
             print(f'Probe {n}: {p}')
             p.print_cal_table()
