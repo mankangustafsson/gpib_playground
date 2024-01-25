@@ -9,6 +9,7 @@ if __name__ == '__main__':
                             verbose=True)
     if dev is None:
         exit(1)
+    dev.timeout = 10000
 
     menu_on = dev.query(':DISP:MENU:STAT?').strip() == '1'
     if menu_on:
