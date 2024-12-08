@@ -8,7 +8,7 @@ import sys
 
 def valid_commands(cmd):
     if cmd.lower() not in ['preset', 'init', 'zero', 'read',
-                           'oc1', 'oc0', 'probes']:
+                           'oc1', 'oc0', 'probes', 'upload']:
         msg = '%s is not a valid command' % cmd
         raise argparse.ArgumentTypeError(msg)
     return cmd.lower()
@@ -118,5 +118,14 @@ for cmd in args.commands:
         pm.read(sensors, probeList, frequencies, offsets, args.op, args.u)
     elif cmd == 'probes':
         Lab.printProbes()
+    elif cmd == 'upload':
+        pm.dev.write('SN2HP8482A')
+        pm.dev.write('CT2')
+        pm.dev.write(f'RF2{Lab.probes[1].ref_cf}%')
+        for k, v in Lab.probes[2].cf_table.items():
+            entry = f'ET2 {k / 1E9}GZ {v}% EN'
+            print(entry)
+            pm.dev.write(entry)
+        pm.dev.write('EX')
     else:
         pm.test_port(cmd == 'oc1')
