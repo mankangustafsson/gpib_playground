@@ -36,7 +36,8 @@ time.sleep(6)
 dev.write('OPC?;SAV1;')
 time.sleep(5)
 
-input('Connect the Thru from the REFL Port to the TRANS Port, then press Enter.')
+input('Connect the Thru from the REFL Port to the TRANS Port,'
+      ' then press Enter.')
 print('Measuring thru')
 dev.write('OPC?;STANE;')
 print('Computing transmission cal coefficients')

@@ -3,7 +3,7 @@ import json
 import pyvisa
 import time
 
-from Lab import Lab.probes
+import Lab
 
 
 def valid_range(start, stop):
@@ -31,7 +31,8 @@ def zero_entry(index, rf):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('command', choices=['backup', 'restore', 'verify', 'zero', 'measure'])
+parser.add_argument('command', choices=['backup', 'restore', 'verify', 'zero',
+                                        'measure'])
 parser.add_argument('--start', type=int, default=0,
                     help='start entry to operate on')
 parser.add_argument('--stop', type=int, default=155,
@@ -127,8 +128,10 @@ elif args.command == 'measure':
             if str(i) in data:
                 entry = data[str(i)]
                 freq = entry['frequency']
-                rf_cmd = '*CLS; :STAT:QUES:POW:ENAB 32767; :STAT:QUES:ENAB 32767; '
-                rf_cmd += f':OUTP:MOD OFF; :FREQ:CW {freq} Hz; :POWER 0 dBm; :OUTP ON'
+                rf_cmd = '*CLS; :STAT:QUES:POW:ENAB 32767;'
+                rf_cmd += ' :STAT:QUES:ENAB 32767;'
+                rf_cmd += f' :OUTP:MOD OFF; :FREQ:CW {freq} Hz;'
+                rf_cmd += ' :POWER 0 dBm; :OUTP ON'
                 rf.write(rf_cmd)
                 time.sleep(0.8)
                 cf = probe.get_cf(freq)
