@@ -17,6 +17,7 @@
 @flake8.exe Lab.py
 @flake8.exe m6960.py
 @flake8.exe notch.py
+@flake8.exe poe.py
 @flake8.exe PowerMeter.py
 @flake8.exe Probe.py
 @flake8.exe psu.py
