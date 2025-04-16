@@ -47,9 +47,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('commands', type=valid_commands, nargs='*',
                     help='valid commands are: preset, init, zero, read and'
                     ' probes. probes prints probe info')
-parser.add_argument('-a', type=int, choices=[0, 1, 2, 3], metavar='probe_id',
+parser.add_argument('-a', type=int, choices=[0, 1, 2, 3, 4], metavar='probe_id',
                     help='associates probe_id with sensor A')
-parser.add_argument('-b', type=int, choices=[0, 1, 2, 3], metavar='probe_id',
+parser.add_argument('-b', type=int, choices=[0, 1, 2, 3, 4], metavar='probe_id',
                     help='associates probe_id with sensor B')
 add_frequency(parser,
               help_prefix='Frequency to calculate calibration factor for.')
