@@ -41,7 +41,7 @@ class Device:
             if verbose:
                 print("Connecting to " + self.address + "...", end="", flush=True)
             name = self.dev.query(self.idQuery)
-            while not self.name in name:
+            while self.name not in name:
                 time.sleep(0.1)
                 name = self.dev.query(self.idQuery)
             if verbose:
