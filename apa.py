@@ -85,7 +85,7 @@ def data_RX():
                     + (buf[4].to_bytes(length=1, byteorder="big", signed=False))
                 )
             ):
-                Ecode = binascii.unhexlify(
+                binascii.unhexlify(
                     (buf[7].to_bytes(length=1, byteorder="big", signed=False))
                     + (buf[8].to_bytes(length=1, byteorder="big", signed=False))
                 )
@@ -123,7 +123,7 @@ def Enable():
     )
     ser.write(b"0000")  # pad
     ser.write(b"\r\n")
-    if poll_RX() == False:
+    if not poll_RX():
         print("Enable Fail")
         sys.exit()
 
@@ -145,7 +145,7 @@ def Read_data():
     )
     ser.write(b"0000")  # pad
     ser.write(b"\r\n")
-    if data_RX() == False:
+    if not data_RX():
         print("Read Fail")
         sys.exit()
 
@@ -178,7 +178,7 @@ def Verify_data():
             ser.write(binascii.hexlify(b"\0").upper())
             File_active = False
     ser.write(b"\r\n")
-    if poll_RX() == False:
+    if not poll_RX():
         print("Verify Fail")
         sys.exit()
     return File_active
@@ -232,7 +232,7 @@ def Send_data():
             ser.write(binascii.hexlify(b"\0").upper())
             File_active = False
     ser.write(b"\r\n")
-    if poll_RX() == False:
+    if not poll_RX():
         print("Write Fail")
         sys.exit()
     return File_active
@@ -266,7 +266,7 @@ def Erase_data():
         ).upper()
     )
     ser.write(b"\r\n")
-    if poll_RX() == False:
+    if not poll_RX():
         print("Erase Fail")
         sys.exit()
 
