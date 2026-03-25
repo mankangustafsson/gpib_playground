@@ -10,8 +10,9 @@ class SmpTest:
     desc = ""
     option = None
 
-    def __init__(self, dev):
+    def __init__(self, dev, deep=False):
         self.dev = dev
+        self.deep = deep
         self.passed = True
 
     def __call__(self):
@@ -19,7 +20,20 @@ class SmpTest:
         self.dev.write("*RST")
         time.sleep(0.5)
         self.run()
-        return self.passed
+        std_passed = self.passed
+        deep_passed = None
+        if self.deep and self.has_deep():
+            print("  --- deep checks ---")
+            self.passed = True
+            self.dev.write("*RST")
+            time.sleep(0.5)
+            self.run_deep()
+            deep_passed = self.passed
+        return std_passed, deep_passed
+
+    @classmethod
+    def has_deep(cls):
+        return cls.run_deep is not SmpTest.run_deep
 
     def tp(self, point):
         return read_tp(self.dev, point)
@@ -33,6 +47,9 @@ class SmpTest:
 
     def run(self):
         raise NotImplementedError
+
+    def run_deep(self):
+        pass
 
 
 class TestA4(SmpTest):
@@ -249,6 +266,92 @@ class TestA9(SmpTest):
                    f"Step 3: {level:.1f}dBm (unlevel cleared)"
                    f"  TP1613={v1613:+.2f}V  [≈+0.3V]")
 
+    def run_deep(self):
+        # Collector voltages (known fault — track regression)
+        v1610 = self.tp(1610)
+        self.check(10.4 <= v1610 <= 10.6,
+                   f"TP1610 collector V240:  {v1610:+.2f}V"
+                   f"  [10.4, 10.6]")
+        v1611 = self.tp(1611)
+        self.check(10.4 <= v1611 <= 10.6,
+                   f"TP1611 collector V250:  {v1611:+.2f}V"
+                   f"  [10.4, 10.6]")
+
+        # LF generator toggle
+        self.dev.write("SOUR2:FREQ:CW 1000")
+        self.dev.write("SOUR2:FUNC:SHAP SIN")
+        self.dev.write("SOUR:AM:INT2:FREQ 1000")
+        self.dev.write("SOUR:AM:STAT ON")
+        time.sleep(0.3)
+        v1615 = self.tp(1615)
+        self.check(0.39 <= v1615 <= 0.42,
+                   f"TP1615 LF gen (on):    {v1615:+.3f}V"
+                   f"  [0.39, 0.42]")
+        self.dev.write("SOUR:AM:STAT OFF")
+        time.sleep(0.3)
+        v1615 = self.tp(1615)
+        self.check(-0.02 <= v1615 <= 0.02,
+                   f"TP1615 LF gen (off):   {v1615:+.3f}V"
+                   f"  [≈0]")
+
+        # AM depth DAC — with AM on
+        self.dev.write("SOUR:AM:STAT ON")
+        time.sleep(0.3)
+        v1603 = self.tp(1603)
+        self.check(-1.01 <= v1603 <= 0.0,
+                   f"TP1603 AM DAC (AM on): {v1603:+.2f}V"
+                   f"  [-1.01, 0]")
+        self.dev.write("SOUR:AM:STAT OFF")
+
+        # AM adder — narrow range with AM off
+        time.sleep(0.3)
+        v1604 = self.tp(1604)
+        self.check(1.495 <= v1604 <= 1.505,
+                   f"TP1604 AM adder (off): {v1604:+.3f}V"
+                   f"  [1.495, 1.505]")
+
+        # FM deviation DACs — with FM on
+        self.dev.write("SOUR:FM:STAT ON")
+        time.sleep(0.3)
+        v1605 = self.tp(1605)
+        self.check(0.0 <= v1605 <= 2.5,
+                   f"TP1605 FM DAC (FM on): {v1605:+.2f}V"
+                   f"  [0, 2.5]")
+        self.dev.write("SOUR:FM:STAT OFF")
+
+        # Diff amp offset and main loop across frequency range
+        # Includes YIG boundary at 10 GHz (9.999/10.0/10.001)
+        freqs_mhz = [10, 100, 500, 1000]
+        freqs_mhz += list(range(2000, 21000, 1000))
+        freqs_mhz += [9999, 10001]
+        freqs_mhz.sort()
+
+        self.dev.write("OUTP:STAT ON")
+        for freq_mhz in freqs_mhz:
+            freq_label = f"{freq_mhz/1000:.3f}GHz"
+            self.dev.write(
+                f"SOURCE:FREQUENCY:CW {freq_mhz}MHz")
+            time.sleep(0.3)
+
+            v1612 = self.tp(1612)
+            self.check(-0.04 <= v1612 <= 0.04,
+                       f"TP1612 @ {freq_label}:"
+                       f"  {v1612:+.3f}V  [-0.04, 0.04]")
+
+            self.dev.write("POW -140")
+            time.sleep(0.3)
+            v1613 = self.tp(1613)
+            self.check(-5.5 <= v1613 <= -4.5,
+                       f"TP1613 min @ {freq_label}:"
+                       f"  {v1613:+.2f}V  [≈-5]")
+
+            self.dev.write("POW 22")
+            time.sleep(0.3)
+            v1613 = self.tp(1613)
+            self.check(0.3 <= v1613 <= 1.0,
+                       f"TP1613 max @ {freq_label}:"
+                       f"  {v1613:+.2f}V  [≈0.7]")
+
 
 class TestA10(SmpTest):
     name = "A10"
@@ -296,6 +399,37 @@ class TestA10(SmpTest):
         self.check(monotonic_dec, "TP1805 monotonic decrease:")
         self.check(all_1807_ok, "TP1807 in [-3V, +3V]:    ")
 
+    def run_deep(self):
+        # Sub-2GHz, 1GHz steps, YIG boundary at 10GHz
+        freqs_mhz = [10, 100, 500, 1000]
+        freqs_mhz += list(range(2000, 21000, 1000))
+        freqs_mhz += [9999, 10001]
+        freqs_mhz.sort()
+
+        print(f"{'Freq':>12s}  {'TP1805':>8s}  {'TP1807':>8s}"
+              f"  {'1807 ok':>8s}")
+        print("-" * 42)
+
+        all_ok = True
+        for freq_mhz in freqs_mhz:
+            freq_label = f"{freq_mhz/1000:.3f}GHz"
+            self.dev.write(
+                f"SOURCE:FREQUENCY:CW {freq_mhz}MHz")
+            time.sleep(0.3)
+
+            v1805 = self.tp(1805)
+            v1807 = self.tp(1807)
+
+            ok = -3.0 <= v1807 <= 3.0
+            if not ok:
+                all_ok = False
+            ok_str = "OK" if ok else "FAIL"
+            print(f"{freq_label:>12s}  {v1805:8.2f}  {v1807:8.2f}"
+                  f"  {ok_str:>8s}")
+
+        print()
+        self.check(all_ok, "TP1807 in [-3V, +3V] all freqs:")
+
 
 class TestA26(SmpTest):
     name = "A26"
@@ -305,6 +439,22 @@ class TestA26(SmpTest):
         v1910 = self.tp(1910)
         self.check(v1910 > 8.0,
                    f"TP1910={v1910:.2f}V  (>8V)")
+
+    def run_deep(self):
+        freqs_mhz = [10, 100, 500, 1000]
+        freqs_mhz += list(range(2000, 21000, 1000))
+        freqs_mhz += [9999, 10001]
+        freqs_mhz.sort()
+
+        for freq_mhz in freqs_mhz:
+            freq_label = f"{freq_mhz/1000:.3f}GHz"
+            self.dev.write(
+                f"SOURCE:FREQUENCY:CW {freq_mhz}MHz")
+            time.sleep(0.3)
+            v1910 = self.tp(1910)
+            self.check(v1910 > 8.0,
+                       f"TP1910 @ {freq_label}:"
+                       f"  {v1910:.2f}V  (>8V)")
 
 
 # (description, test class, required option or None)
@@ -323,13 +473,15 @@ MODULES = {
 def list_modules(installed):
     """Print available test modules with option requirements."""
     for key, cls in MODULES.items():
-        opt = cls.option
-        if opt is None:
-            tag = ""
-        elif opt in installed:
-            tag = " [installed]"
-        else:
-            tag = " [not installed]"
+        tags = []
+        if cls.option:
+            if cls.option in installed:
+                tags.append("installed")
+            else:
+                tags.append("not installed")
+        if cls.has_deep():
+            tags.append("deep")
+        tag = f" [{', '.join(tags)}]" if tags else ""
         print(f"  {key:4s}  {cls.desc:40s}{tag}")
 
 
@@ -348,6 +500,11 @@ def parse_args():
         "-lm", "--list-modules",
         action="store_true",
         help="list available test modules and exit",
+    )
+    parser.add_argument(
+        "-d", "--deep",
+        action="store_true",
+        help="run extended state-dependent checks",
     )
     return parser.parse_args()
 
@@ -384,6 +541,8 @@ if __name__ == "__main__":
         passed = []
         failed = []
         skipped = []
+        deep_passed = []
+        deep_failed = []
 
         for name in selected:
             cls = MODULES[name]
@@ -393,17 +552,28 @@ if __name__ == "__main__":
                       f" (not installed)")
                 skipped.append(name)
                 continue
-            if cls(dev)():
+            std_ok, deep_ok = cls(dev, deep=args.deep)()
+            if std_ok:
                 passed.append(name)
             else:
                 failed.append(name)
+            if deep_ok is True:
+                deep_passed.append(name)
+            elif deep_ok is False:
+                deep_failed.append(name)
 
         print("\n" + "=" * 40)
-        print(f"PASSED:  {len(passed):2d}  {', '.join(passed)}")
+        print(f"PASSED:    {len(passed):2d}  {', '.join(passed)}")
         if failed:
-            print(f"FAILED:  {len(failed):2d}  {', '.join(failed)}")
+            print(f"FAILED:    {len(failed):2d}  {', '.join(failed)}")
         if skipped:
-            print(f"SKIPPED: {len(skipped):2d}  {', '.join(skipped)}")
+            print(f"SKIPPED:   {len(skipped):2d}  {', '.join(skipped)}")
+        if deep_passed:
+            print(f"DEEP OK:   {len(deep_passed):2d}"
+                  f"  {', '.join(deep_passed)}")
+        if deep_failed:
+            print(f"DEEP FAIL: {len(deep_failed):2d}"
+                  f"  {', '.join(deep_failed)}")
 
     finally:
         dev.write("*RST")
