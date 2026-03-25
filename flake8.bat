@@ -22,8 +22,10 @@
 @flake8.exe Probe.py
 @flake8.exe psu.py
 @flake8.exe RfGen.py
+@flake8.exe smp_common.py
 @flake8.exe smp_cw.py
 @flake8.exe smp_diag.py
+@flake8.exe smp_test.py
 @flake8.exe ssa3032x_screen.py
 @flake8.exe stepAttenuator.py
 @flake8.exe sweep_power_frequency.py

@@ -1,5 +1,4 @@
-from Devices import Device
-from Lab import Lab
+from smp_common import connect_smp
 
 from quantiphy import Quantity
 import sys
@@ -10,9 +9,7 @@ if __name__ == "__main__":
         power = Quantity(sys.argv[2], "dBm")
         state = sys.argv[3].upper()
 
-        dev = Lab.connectByType(Device.Type.RF_GEN, hint="SMP02", verbose=True)
-        if dev is None:
-            exit(1)
+        dev = connect_smp()
 
         if state == "OFF":
             dev.write("*RST;*CLS")

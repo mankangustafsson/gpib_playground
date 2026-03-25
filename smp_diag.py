@@ -1,5 +1,7 @@
-from Devices import Device
-from Lab import Lab
+from smp_common import (
+    connect_smp, query_options, list_hw_modules,
+    READS_PER_POINT, READ_DELAY, POINT_DELAY,
+)
 
 import argparse
 import time
@@ -166,10 +168,6 @@ MODULES = {
     },
 }
 
-READS_PER_POINT = 3
-READ_DELAY = 0.05
-POINT_DELAY = 0.15
-
 
 def measure_interval(dev, interval, installed, verbose=False):
     for x, entry in interval.items():
@@ -223,37 +221,10 @@ def measure_interval(dev, interval, installed, verbose=False):
             print(f"{label} {result}")
 
 
-def query_options(dev):
-    """Query *OPT? and return set of installed option names."""
-    reply = dev.query("*OPT?").strip()
-    return {o for o in reply.split(",") if o != "0"}
-
-
 def is_installed(interval, installed_options):
     """Check if a module is installed (no option or option present)."""
     opt = interval.get("option")
     return opt is None or opt in installed_options
-
-
-def query_hw_modules(dev):
-    """Query :DIAG:INFO:MOD? and return dict of module info."""
-    reply = dev.query(":DIAG:INFO:MOD?").strip()
-    modules = {}
-    for entry in reply.split(","):
-        parts = entry.strip().split()
-        if len(parts) >= 3:
-            name = parts[0]
-            var = parts[1]
-            rev = parts[2]
-            modules[name] = (var, rev)
-    return modules
-
-
-def list_hw_modules(dev):
-    """Print hardware modules from :DIAG:INFO:MOD?."""
-    hw = query_hw_modules(dev)
-    for name, (var, rev) in hw.items():
-        print(f"  {name:8s}  {var}  {rev}")
 
 
 def list_modules(installed):
@@ -325,10 +296,9 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    dev = Lab.connectByType(
-        Device.Type.RF_GEN, hint="SMP02", verbose=True
-    )
-    if dev is None:
+    try:
+        dev = connect_smp()
+    except ConnectionError:
         exit(1)
 
     try:
