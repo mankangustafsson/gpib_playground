@@ -1,6 +1,8 @@
 from smp_common import (
     connect_smp, query_options, list_hw_modules,
+    detect_a9_variant, A9_TP_RANGES, A9_V_6301, A9_V_UNKNOWN,
     READS_PER_POINT, READ_DELAY, POINT_DELAY,
+    unlock_protect,
 )
 
 import argparse
@@ -67,31 +69,31 @@ MODULES = {
     },
     "A7": {
             "desc": "Reference/Step Synthesis",
-            200: (-0.01, 0.01, "Reference ground"),
-            201: (0.5, 14, "Tuning voltage VCXO 100MHz"),
-            202: (-10, 0, "Reference for tuning voltage DAC"),
-            203: (3.5, 5, "Reference level 1MHz"),
-            204: (1.8, 3.6, "Output level divider 1 MHz"),
-            205: (1.8, 3.6, "External reference level"),
-            206: (0.1, 0.3, "IF level 300 MHz"),
-            207: (0.6, 1.2, "Output level REF50"),
-            208: (-0.08, 0.08, "Frequency detector"),
-            209: (0.2, 1.4, "Output level REF100"),
-            210: (0.15, 0.52, "Output level REF600"),
-            211: (22, 26, "Supply voltage VA24-P"),
-            212: (0.5, 20, "Tuning voltage Step VCO"),
-            213: (1, 2, "Level Step divider"),
-            214: (0.07, 0.2, "Step IF level 3 to 17MHz"),
-            215: (0.2, 1, "Output level FSTEP"),
+            200: (-0.02, 0.02, "10-kOhm reference impedance"),
+            201: (2, 12, "Control voltage 100-MHz xtal VCO"),
+            202: (-10.1, 0.01, "Output D/A converter tuning voltage"),
+            203: (1.8, 5.2, "1-MHz reference signal for reference PLL"),
+            204: (2.0, 3.0, "1-MHz relational signal for reference PLL"),
+            205: (0.8, 3.5, "External reference I/O"),
+            206: (0.1, 0.4, "300-MHz IF in multiplier"),
+            207: (0.3, 1.3, "50-MHz output REF50"),
+            208: (-0.04, 0.04, "Frequency detector (Step PLL locked)"),
+            209: (0.18, 0.60, "100-MHz output REF100"),
+            210: (-0.02, 0.6, "600-MHz output REF600 (0.2-0.6V <93.75MHz / +/-20mV >=93.75MHz)"),
+            211: (22.5, 25.5, "24V supply voltage"),
+            212: (1, 20, "Control voltage Step VCO"),
+            213: (0.4, 2.5, "Output signal step divider"),
+            214: (0.10, 0.25, "Down-converted VCO signal 3-17MHz"),
+            215: (0.2, 0.6, "Output step frequency FSTEP 103-117MHz"),
     },
     "A8": {
             "desc": "Digital Synthesis",
             300: (14, 16, "Supply voltage VA15-P"),
-            301: (-1, 10, "Tuning voltage clock VCO"),
-            302: (-0.02, 0.02, "Level VCO clock DCOD"),
-            303: (0.5, 1.5, "Clock for DDS_GA"),
-            304: (0.05, 0.2, "Output level FDSYN"),
-            305: (-5, 24, "Tuning voltage buffer VCO"),
+            301: (-0.1, 0.1, "DCOD oscillator tuning voltage"),
+            302: (-0.02, 0.02, "DCOD oscillator level"),
+            303: (0.5, 1.5, "DDS-GA clock level"),
+            304: (0.05, 0.2, "Level at output FDDS"),
+            305: (12, 20, "Oscillator tuning voltage"),
             306: (-16, -14, "Supply voltage VA15-N"),
             307: (7, 8, "Supply voltage VA7.5-P"),
     },
@@ -118,7 +120,7 @@ MODULES = {
             "desc": "YIG PLL",
             1800: (-10.02, -9.98, "Negative reference voltage"),
             1801: (4.95, 5.45, "ECL supply voltage"),
-            1802: (-12.0, -0.8, "Pretune DAC"),
+            1802: (0.8, 12.0, "Pretune DAC"),
             1803: (0, 10, "Tracking DAC"),
             1804: (-6, -3, "Output N210-B"),
             1805: (-5.7, -0.37, "Main tuning current"),
@@ -131,6 +133,11 @@ MODULES = {
             1812: (-12, 12, "FM adder"),
             1815: (-0.01, 0.01, "Reference ground"),
     },
+    "A21": {
+            "desc": "Sampling Module (via A26 MUX over W216)",
+            1902: (0.9, 1.1, "VARSAMP model ID via W216.9"),
+            1910: (7.5, 11, "DIAGSAMP comb-gen diag via W216.10"),
+    },
     "A26": {
             "desc": "Microwave Interface",
             1900: (-0.02, 0.02, "Offset voltage correction"),
@@ -138,7 +145,6 @@ MODULES = {
                    "option": "SMP-B11",
                    "installed": (0.5, 1.5),
                    "not_installed": (-0.25, 0.25)},
-            1902: (0.5, 1.5, "ID SMP02 model"),
             1903: {"desc": "ID Option SMP-B11 DCNV",
                    "option": "SMP-B11",
                    "installed": (0.5, 1.5),
@@ -156,7 +162,6 @@ MODULES = {
                    "installed": (0.5, 1.5),
                    "not_installed": (-0.25, 0.25)},
             1907: (-0.25, 0.25, "ID AMP20/DBL27/DBL40"),
-            1910: (7.5, 11, "Diagnosis sampling pulse gen (SMPL)"),
             1911: (0, 3, "Diagnosis detector output (DTK27/40)"),
             1914: {"desc": "ID Option SMP-B15 ATT27",
                    "option": "SMP-B15",
@@ -269,8 +274,25 @@ def list_modules(installed):
         )
 
 
+def apply_a9_variant(dev):
+    """Replace MODULES['A9'] with the detected variant's range table."""
+    stock = detect_a9_variant(dev, verbose=True)
+    key = stock if stock in A9_TP_RANGES else A9_V_6301
+    MODULES["A9"] = A9_TP_RANGES[key]
+    if stock not in A9_TP_RANGES:
+        print(f"  variant unresolved; falling back to {A9_V_6301} ranges")
+
+
+def apply_a8_freq(dev):
+    """Park the instrument at FREQ = 1 GHz so A8 TP305 matches band-1 p.359."""
+    dev.write(":FREQ 1 GHz")
+    time.sleep(0.3)
+
+
 def run_diagnostics(dev, modules, installed, verbose=False, ignore_opt=False):
     """Measure selected modules, skipping uninstalled ones unless forced."""
+    if "A9" in modules:
+        apply_a9_variant(dev)
     for name in modules:
         interval = MODULES[name]
         desc = interval.get("desc", name)
@@ -282,6 +304,8 @@ def run_diagnostics(dev, modules, installed, verbose=False, ignore_opt=False):
             print(f"\n=== {name}: {desc} [not installed by *OPT?; probing anyway] ===")
         else:
             print(f"\n=== {name}: {desc} ===")
+        if name == "A8":
+            apply_a8_freq(dev)
         measure_interval(dev, interval, installed, verbose=verbose)
 
 
@@ -313,10 +337,33 @@ def parse_args():
         help="list hardware modules and exit",
     )
     parser.add_argument(
+        "--detect-a9",
+        action="store_true",
+        help="detect A9 board variant (1035.6301.02 vs 1035.6199.02) and exit",
+    )
+    parser.add_argument(
         "--ignore-opt",
         dest="ignore_opt",
         action="store_true",
         help="probe requested modules even if *OPT? says they are not installed",
+    )
+    parser.add_argument(
+        "--unlock",
+        type=int,
+        choices=[1, 2, 3],
+        nargs="?",
+        const=1,
+        default=None,
+        metavar="LEVEL",
+        help="clear the UTILITIES/PROTECT lock flag on connect"
+             " (:SYST:PROT<n>:STAT OFF, <password>)."
+             " L1 (default) = PULSE GEN / YFOM / ALC AMP / LEVEL view menus;"
+             " L2 = REF OSC menu; L3 = UTILITIES/DIAG/PARAM menu."
+             " Note: firmware 3.70 does NOT gate GPIB access on this flag —"
+             " all SCPI commands work regardless of state. The flag only"
+             " hides the corresponding front-panel menu items. Kept for"
+             " forward-compatibility and for clearing the on-screen"
+             " 'password required' indicator while scripting",
     )
     return parser.parse_args()
 
@@ -330,11 +377,23 @@ if __name__ == "__main__":
         exit(1)
 
     try:
+        if args.unlock is not None:
+            errs = unlock_protect(dev, args.unlock)
+            if errs:
+                print(f"LOCK LEVEL {args.unlock}: unlock FAILED ({errs})")
+            else:
+                print(f"LOCK LEVEL {args.unlock}: unlocked")
+
         installed = query_options(dev)
 
         if args.hw_info:
             list_hw_modules(dev)
             exit(0)
+
+        if args.detect_a9:
+            stock = detect_a9_variant(dev, verbose=True)
+            print(f"  verdict: {stock}")
+            exit(0 if stock != A9_V_UNKNOWN else 2)
 
         if args.list_modules:
             list_modules(installed)
