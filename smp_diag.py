@@ -27,7 +27,12 @@ MODULES = {
             7: (3.0, 3.7, "Battery voltage"),
     },
     "A4": {
-            "desc": "Option SM-B2 2nd LF Generator",
+            "desc": "A4 Pulse Generator (SMP-B14)",
+            "option": "SMP-B14",
+            1005: (0.9, 1.2, "Pulse generator level"),
+    },
+    "A4LF": {
+            "desc": "A4 LF Generator (SM-B2, 2nd)",
             "option": "SM-B2",
             1300: (-0.01, 0.01, "Reference ground"),
             1301: (1.0, 5.0, "Level quartz oscillator"),
@@ -39,7 +44,7 @@ MODULES = {
             1307: (-15.6, -14.4, "Supply voltage VA15-N"),
     },
     "A5": {
-            "desc": "Option SM-B2 LF Generator",
+            "desc": "A5 LF Generator (SM-B2, 1st)",
             "option": "SM-B2",
             1200: (-0.01, 0.01, "Reference ground"),
             1201: (1.0, 5.0, "Level quartz oscillator"),
@@ -169,56 +174,75 @@ MODULES = {
 }
 
 
+def iter_points(interval):
+    for tp, entry in interval.items():
+        if isinstance(tp, int):
+            yield tp, entry
+
+
+def read_point(dev, tp):
+    time.sleep(POINT_DELAY)
+    values = []
+    for i in range(READS_PER_POINT):
+        if i > 0:
+            time.sleep(READ_DELAY)
+        reply = dev.query(f":DIAG:MEAS:POINT{tp}?")
+        values.append(float(reply))
+    avg = sum(values) / len(values)
+    return values, avg
+
+
+def evaluate_point(dev, tp, entry, installed):
+    values, avg = read_point(dev, tp)
+    if isinstance(entry, dict):
+        opt = entry["option"]
+        desc = entry["desc"]
+        if opt in installed:
+            lo, hi = entry["installed"]
+            desc += " [installed]"
+        else:
+            lo, hi = entry["not_installed"]
+            desc += " [not installed]"
+    else:
+        lo, hi, desc = entry
+
+    info_only = lo is None
+    label = f"TP{tp:04d}  {desc:50s}"
+    if info_only:
+        result = f"val={avg:8.2f}{'':22s}INFO"
+        status = "INFO"
+    elif abs(avg - tp) < 0.01 and not (lo <= avg <= hi):
+        result = f"val={avg:8.2f}{'':22s}ECHO"
+        status = "ECHO"
+    else:
+        if avg < lo:
+            d = avg - lo
+            pct = abs(d / lo) * 100 if lo != 0 else 0
+            diff = f"FAIL ({d:+.2f}, {pct:.1f}%)"
+            status = "FAIL"
+        elif avg > hi:
+            d = avg - hi
+            pct = abs(d / hi) * 100 if hi != 0 else 0
+            diff = f"FAIL ({d:+.2f}, {pct:.1f}%)"
+            status = "FAIL"
+        else:
+            diff = "OK"
+            status = "OK"
+        result = f"avg={avg:8.2f}  [{lo:8.2f},{hi:8.2f}] {diff}"
+    return label, values, result, status
+
+
 def measure_interval(dev, interval, installed, verbose=False):
-    for x, entry in interval.items():
-        if not isinstance(x, int):
-            continue
-        if isinstance(entry, dict):
-            opt = entry["option"]
-            desc = entry["desc"]
-            if opt in installed:
-                lo, hi = entry["installed"]
-                desc += " [installed]"
-            else:
-                lo, hi = entry["not_installed"]
-                desc += " [not installed]"
-        else:
-            lo, hi, desc = entry
-        info_only = lo is None
-        time.sleep(POINT_DELAY)
-
-        values = []
-        for i in range(READS_PER_POINT):
-            if i > 0:
-                time.sleep(READ_DELAY)
-            reply = dev.query(f":DIAG:MEAS:POINT{x}?")
-            values.append(float(reply))
-
-        avg = sum(values) / len(values)
-        label = f"TP{x:04d}  {desc:50s}"
-        if info_only:
-            result = f"val={avg:8.2f}{'':22s}INFO"
-        elif abs(avg - x) < 0.01 and not (lo <= avg <= hi):
-            result = f"val={avg:8.2f}{'':22s}ECHO"
-        else:
-            if avg < lo:
-                d = avg - lo
-                pct = abs(d / lo) * 100 if lo != 0 else 0
-                diff = f"FAIL ({d:+.2f}, {pct:.1f}%)"
-            elif avg > hi:
-                d = avg - hi
-                pct = abs(d / hi) * 100 if hi != 0 else 0
-                diff = f"FAIL ({d:+.2f}, {pct:.1f}%)"
-            else:
-                diff = "OK"
-            result = (
-                f"avg={avg:8.2f}  [{lo:8.2f},{hi:8.2f}] {diff}"
-            )
+    summary = {"OK": 0, "FAIL": 0, "ECHO": 0, "INFO": 0}
+    for tp, entry in iter_points(interval):
+        label, values, result, status = evaluate_point(dev, tp, entry, installed)
+        summary[status] += 1
         if verbose:
             cols = "".join(f"{v:8.2f}" for v in values)
             print(f"{label}\n  {cols}  {result}")
         else:
             print(f"{label} {result}")
+    return summary
 
 
 def is_installed(interval, installed_options):
@@ -231,9 +255,7 @@ def list_modules(installed):
     """Print all diagnostic modules with install status."""
     for key, interval in MODULES.items():
         desc = interval.get("desc", key)
-        count = sum(
-            1 for k in interval if isinstance(k, int)
-        )
+        count = sum(1 for k in interval if isinstance(k, int))
         opt = interval.get("option")
         if opt is None:
             tag = ""
@@ -247,20 +269,20 @@ def list_modules(installed):
         )
 
 
-def run_diagnostics(dev, modules, installed, verbose=False):
-    """Measure selected modules, skipping uninstalled ones."""
+def run_diagnostics(dev, modules, installed, verbose=False, ignore_opt=False):
+    """Measure selected modules, skipping uninstalled ones unless forced."""
     for name in modules:
         interval = MODULES[name]
         desc = interval.get("desc", name)
-        if not is_installed(interval, installed):
-            print(
-                f"\n=== {name}: {desc}"
-                " [not installed] ==="
-            )
+        installed_now = is_installed(interval, installed)
+        if not installed_now and not ignore_opt:
+            print(f"\n=== {name}: {desc} [not installed] ===")
             continue
-        print(f"\n=== {name}: {desc} ===")
-        measure_interval(dev, interval, installed,
-                         verbose=verbose)
+        if not installed_now and ignore_opt:
+            print(f"\n=== {name}: {desc} [not installed by *OPT?; probing anyway] ===")
+        else:
+            print(f"\n=== {name}: {desc} ===")
+        measure_interval(dev, interval, installed, verbose=verbose)
 
 
 def parse_args():
@@ -289,6 +311,12 @@ def parse_args():
         "-hw", "--hw-info",
         action="store_true",
         help="list hardware modules and exit",
+    )
+    parser.add_argument(
+        "--ignore-opt",
+        dest="ignore_opt",
+        action="store_true",
+        help="probe requested modules even if *OPT? says they are not installed",
     )
     return parser.parse_args()
 
@@ -326,6 +354,7 @@ if __name__ == "__main__":
             )
 
         run_diagnostics(dev, selected, installed,
-                        args.verbose)
+                        verbose=args.verbose,
+                        ignore_opt=args.ignore_opt)
     finally:
         dev.close()

@@ -3,6 +3,13 @@ from smp_common import connect_smp, read_tp, query_options
 import argparse
 import time
 
+# Frequency list for deep checks: sub-2GHz, 1GHz steps, YIG boundary
+DEEP_FREQS_MHZ = sorted(
+    [10, 100, 500, 1000]
+    + list(range(2000, 21000, 1000))
+    + [9999, 10001]
+)
+
 
 class SmpTest:
     """Base class for SMP02 functional tests."""
@@ -54,7 +61,7 @@ class SmpTest:
 
 class TestA4(SmpTest):
     name = "A4"
-    desc = "Pulse Generator"
+    desc = "A4 Pulse Generator (SMP-B14)"
     option = "SMP-B14"
 
     def run(self):
@@ -71,7 +78,7 @@ class TestA4(SmpTest):
 
 class TestA5(SmpTest):
     name = "A5"
-    desc = "LF Generator (SM-B2)"
+    desc = "A5 LF Generator (SM-B2, 1st)"
     option = "SM-B2"
 
     def run(self):
@@ -102,6 +109,33 @@ class TestA5(SmpTest):
         self.check(ok_1203,
                    f"TP1203: {min_1203:+.2f}V .. {max_1203:+.2f}V"
                    f"  [-4, +4]")
+
+
+class TestA4LF(SmpTest):
+    name = "A4LF"
+    desc = "A4 LF Generator (SM-B2, 2nd)"
+    option = "SM-B2"
+
+    def run(self):
+        self.dev.write("OUTP2:SOUR 2")
+        self.dev.write("OUTP2:VOLT 4V")
+        self.dev.write("SOUR2:FREQ:CW 0.2")
+        self.dev.write("SOUR2:FUNC:SHAP SQU")
+        time.sleep(0.5)
+
+        n_samples = 30
+        sample_interval = 0.2
+        vals_1302 = []
+        print("  Sampling TP1302 over one period (~6s)...")
+        for _ in range(n_samples):
+            vals_1302.append(self.tp(1302))
+            time.sleep(sample_interval)
+
+        min_1302, max_1302 = min(vals_1302), max(vals_1302)
+        ok_1302 = min_1302 <= -0.8 and max_1302 >= 0.8
+        self.check(ok_1302,
+                   f"TP1302: {min_1302:+.2f}V .. {max_1302:+.2f}V"
+                   f"  [-1, +1]")
 
 
 class TestA6(SmpTest):
@@ -320,14 +354,8 @@ class TestA9(SmpTest):
         self.dev.write("SOUR:FM:STAT OFF")
 
         # Diff amp offset and main loop across frequency range
-        # Includes YIG boundary at 10 GHz (9.999/10.0/10.001)
-        freqs_mhz = [10, 100, 500, 1000]
-        freqs_mhz += list(range(2000, 21000, 1000))
-        freqs_mhz += [9999, 10001]
-        freqs_mhz.sort()
-
         self.dev.write("OUTP:STAT ON")
-        for freq_mhz in freqs_mhz:
+        for freq_mhz in DEEP_FREQS_MHZ:
             freq_label = f"{freq_mhz/1000:.3f}GHz"
             self.dev.write(
                 f"SOURCE:FREQUENCY:CW {freq_mhz}MHz")
@@ -400,18 +428,12 @@ class TestA10(SmpTest):
         self.check(all_1807_ok, "TP1807 in [-3V, +3V]:    ")
 
     def run_deep(self):
-        # Sub-2GHz, 1GHz steps, YIG boundary at 10GHz
-        freqs_mhz = [10, 100, 500, 1000]
-        freqs_mhz += list(range(2000, 21000, 1000))
-        freqs_mhz += [9999, 10001]
-        freqs_mhz.sort()
-
         print(f"{'Freq':>12s}  {'TP1805':>8s}  {'TP1807':>8s}"
               f"  {'1807 ok':>8s}")
         print("-" * 42)
 
         all_ok = True
-        for freq_mhz in freqs_mhz:
+        for freq_mhz in DEEP_FREQS_MHZ:
             freq_label = f"{freq_mhz/1000:.3f}GHz"
             self.dev.write(
                 f"SOURCE:FREQUENCY:CW {freq_mhz}MHz")
@@ -441,12 +463,7 @@ class TestA26(SmpTest):
                    f"TP1910={v1910:.2f}V  (>8V)")
 
     def run_deep(self):
-        freqs_mhz = [10, 100, 500, 1000]
-        freqs_mhz += list(range(2000, 21000, 1000))
-        freqs_mhz += [9999, 10001]
-        freqs_mhz.sort()
-
-        for freq_mhz in freqs_mhz:
+        for freq_mhz in DEEP_FREQS_MHZ:
             freq_label = f"{freq_mhz/1000:.3f}GHz"
             self.dev.write(
                 f"SOURCE:FREQUENCY:CW {freq_mhz}MHz")
@@ -460,6 +477,7 @@ class TestA26(SmpTest):
 # (description, test class, required option or None)
 MODULES = {
     "A4":  TestA4,
+    "A4LF": TestA4LF,
     "A5":  TestA5,
     "A6":  TestA6,
     "A7":  TestA7,
