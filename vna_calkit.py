@@ -101,7 +101,11 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-dev = Lab.connectByType(Device.Type.VNA, hint=args.u)
+dev = None
+if args.command != "kits":
+    dev = Lab.connectByType(Device.Type.VNA, hint=args.u)
+    if dev is None:
+        exit(1)
 
 if args.command == "save":
     if args.o is not None:

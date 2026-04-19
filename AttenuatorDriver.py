@@ -4,8 +4,10 @@ from Lab import Lab
 
 class AttenuatorDriver:
     def __init__(self, verbose=True):
-        self.dev = Lab.connectByType(Device.Type.ATTENUATOR_DRIVER, verbose)
         self.verbose = verbose
+        self.dev = Lab.connectByType(Device.Type.ATTENUATOR_DRIVER, verbose)
+        if self.dev is None:
+            raise ConnectionError("Failed to connect to attenuator driver")
 
     def preset(self):
         self.dev.write("PR")

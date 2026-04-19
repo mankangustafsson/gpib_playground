@@ -5,6 +5,9 @@ from quantiphy import Quantity
 
 
 dev = Lab.connectByType(Device.Type.COUNTER)
+if dev is None:
+    exit(1)
+
 dev.write("*RST")
 dev.write("*CLS")
 dev.write("*SRE 0")

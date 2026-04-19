@@ -42,4 +42,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    RfGen().setCW(args.command == "on", args.f, args.p, True)
+    try:
+        rf = RfGen()
+    except ConnectionError:
+        raise SystemExit(1)
+
+    rf.setCW(args.command == "on", args.f, args.p, True)

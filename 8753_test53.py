@@ -4,6 +4,8 @@ from Lab import Lab
 import time
 
 dev = Lab.connectByType(Device.Type.VNA, hint="8753")
+if dev is None:
+    exit(1)
 
 print("Presetting the analyzer...please wait")
 dev.write("OPC?;PRES;")

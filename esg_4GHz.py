@@ -2,6 +2,9 @@ from Devices import Device
 from Lab import Lab
 
 dev = Lab.connectByType(Device.Type.RF_GEN)
+if dev is None:
+    exit(1)
+
 dev.query(":SYST:PRES; *OPC?;")
 input("This will change EEPROM settings to enable 4GHz output and lower limit to 50kHz")
 print("4GHz upgrade in progress...", end="", flush=True)

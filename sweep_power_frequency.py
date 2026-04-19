@@ -3,13 +3,15 @@ from Lab import Lab
 from RfGen import RfGen
 
 from quantiphy import Quantity
-from time import time
+import time
 
 if __name__ == "__main__":
+    rf = None
+    pm = None
     try:
         rf = RfGen(verbose=False)
         pm = Lab.connectByType(Device.Type.POWER_METER, verbose=False)
-        if rf is None or pm is None:
+        if pm is None:
             exit(1)
         probe = Lab.probes[0]  # HP8481A, sensor A
 
@@ -26,11 +28,15 @@ if __name__ == "__main__":
                     # print(pmCommand)
                     reply = pm.query_ascii_values(pmCommand)
                     print("{:7q};{:3.2f}".format(freq, reply[0]))
+    except ConnectionError:
+        exit(1)
     except:
         pass
     finally:
         try:
-            rf.setCW(False)
-            pm.close()
+            if rf is not None:
+                rf.setCW(False)
+            if pm is not None:
+                pm.close()
         except:
             pass

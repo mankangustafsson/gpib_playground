@@ -22,31 +22,54 @@ class Device:
         self.term = term
         self.dev = None
 
+    def close(self):
+        if self.dev is not None:
+            try:
+                self.dev.close()
+            except Exception:
+                pass
+            finally:
+                self.dev = None
+
     def __del__(self):
-        if self.dev:
-            self.dev.close()
+        self.close()
 
     def connect(self, verbose=True):
+        self.close()
         rm = pyvisa.ResourceManager()
+        dev = None
         try:
             if self.address.startswith("ASRL"):
-                self.dev = rm.open_resource(self.address, baud_rate=115200)
+                dev = rm.open_resource(self.address, baud_rate=115200)
             else:
-                self.dev = rm.open_resource(self.address)
+                dev = rm.open_resource(self.address)
 
-            self.dev.timeout = 5000
+            dev.timeout = 5000
             if self.term is not None:
-                self.dev.read_termination = self.term
-                self.dev.write_termination = self.term
+                dev.read_termination = self.term
+                dev.write_termination = self.term
             if verbose:
                 print("Connecting to " + self.address + "...", end="", flush=True)
-            name = self.dev.query(self.idQuery)
-            while self.name not in name:
+
+            name = None
+            for _ in range(10):
+                name = dev.query(self.idQuery)
+                if self.name in name:
+                    self.dev = dev
+                    if verbose:
+                        print("connected to " + name)
+                    return self.dev
                 time.sleep(0.1)
-                name = self.dev.query(self.idQuery)
-            if verbose:
-                print("connected to " + name)
-            return self.dev
-        except:
-            print(f"Failed to connect to {self.address}")
-            return self.dev
+
+            raise ConnectionError(
+                f"Unexpected identity response {name!r} from {self.address}"
+            )
+        except Exception as exc:
+            if dev is not None:
+                try:
+                    dev.close()
+                except Exception:
+                    pass
+            self.dev = None
+            print(f"Failed to connect to {self.address}: {exc}")
+            return None

@@ -9,9 +9,11 @@ class Lab:
     @staticmethod
     def connectByType(deviceType, verbose=True, hint=None):
         for d in Lab.devices:
-            if d.deviceType == deviceType:
-                if hint is None or hint == d.name:
-                    return d.connect(verbose)
+            if d.deviceType != deviceType:
+                continue
+            if hint is not None and hint != d.name:
+                continue
+            return d.connect(verbose)
         return None
 
     @staticmethod
@@ -30,8 +32,9 @@ class Lab:
             ld = Lab.isKnownDevice(address)
             if ld is not None:
                 dev = ld.connect()
-                dev.close()
-                n += 1
+                if dev is not None:
+                    ld.close()
+                    n += 1
             elif address not in [
                 "GPIB0::17::INSTR",
                 "GPIB1::17::INSTR",

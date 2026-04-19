@@ -26,7 +26,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # print(args)
 
-    ad = AttenuatorDriver()
+    try:
+        ad = AttenuatorDriver()
+    except ConnectionError:
+        exit(1)
+
     for cmd in args.commands:
         if cmd == "get":
             print("%d dB" % ad.getAttenuation())

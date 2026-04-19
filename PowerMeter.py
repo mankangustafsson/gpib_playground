@@ -7,8 +7,10 @@ import time
 
 class PowerMeter:
     def __init__(self, verbose=True):
-        self.dev = Lab.connectByType(Device.Type.POWER_METER, verbose)
         self.verbose = verbose
+        self.dev = Lab.connectByType(Device.Type.POWER_METER, verbose)
+        if self.dev is None:
+            raise ConnectionError("Failed to connect to power meter")
 
     @staticmethod
     def _checkSensor(sensor):

@@ -116,7 +116,11 @@ parser.add_argument(
 args = parser.parse_args()
 # print(args)
 
-pm = PowerMeter()
+try:
+    pm = PowerMeter()
+except ConnectionError:
+    sys.exit(1)
+
 if not args.commands:
     parser.print_help()
 

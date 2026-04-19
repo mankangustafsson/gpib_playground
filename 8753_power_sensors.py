@@ -4,6 +4,8 @@ from Lab import Lab
 from quantiphy import Quantity
 
 dev = Lab.connectByType(Device.Type.VNA, hint="8753")
+if dev is None:
+    exit(1)
 
 for p in [Lab.probes[0], Lab.probes[1]]:
     sensor = "A" if p.name == "8482A" else "B"

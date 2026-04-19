@@ -7,8 +7,10 @@ import time
 
 class RfGen:
     def __init__(self, verbose=True):
-        self.dev = Lab.connectByType(Device.Type.RF_GEN, verbose)
         self.verbose = verbose
+        self.dev = Lab.connectByType(Device.Type.RF_GEN, verbose)
+        if self.dev is None:
+            raise ConnectionError("Failed to connect to RF generator")
 
     def setCW(self, state, f=None, p=None, warn=False):
         send = "*CLS; :STAT:QUES:POW:ENAB 32767; "
