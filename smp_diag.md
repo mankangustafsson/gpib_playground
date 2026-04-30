@@ -7,12 +7,77 @@ SM-B1 (OCXO), SM-B5 (FM/ΦM Modulator), SMP-B11 (DCNV), SMP-B15 (ATT27)
 
 Not installed: SM-B2 (LF Generator), SMP-B12 (PUM20), SMP-B13 (PUM2), SMP-B14 (Pulse Gen)
 
+> **Historical / superseded content** is moved to
+> [`smp_history.md`](smp_history.md). Inline supersession markers in
+> this doc point to specific anchors there. The doc body itself
+> always reflects current truth.
+
 ## Next actions
 
-1. **Bench — Step 4 A21 I/O sanity** (decisive): splits upstream-input
-   faults from A21-internal faults in one SA pass. See
-   [Physical probe worksheet → Step 4](smp_hw_diag.md). Steps 1–3
-   establish prerequisites; Steps 5–11 localise per Step 4's verdict.
+> Superseded 2026-04-30 — full NEXT-ACTIONS-ITEM-1 banner moved to
+> [`smp_history.md#H-2026-04-30-next-actions-item-1-superseded`](smp_history.md#h-2026-04-30-next-actions-item-1-superseded).
+> Current verdict: chips (V3 = MRF3866 / V4 = MRF5160 push-pull) presumed
+> alive pending Step D.5 + Step 8a bench validation; MC34071DR2G silicon-pull
+> rebuild is on hold. New next action is the four-test bench decomposition
+> in [`smp_next.md`](smp_next.md) Status section. The §2 narrative below is retained
+> verbatim for FA traceability.
+
+1. **Bench — Step 7E A211 ALC rebuild + verification**. Steps 1, 2,
+   4, 4.5 complete (W216 / A20-X211 / A7-X50 excluded). Step 7 A/B
+   **passed** — §7.1.7 bias chain healthy: X95 = −0.72 V, X96 =
+   +6.17 V, X72 = +14.98 V; OP97 (N90) mid-rail, BUZ71 (V90) in
+   active region, R98 ≈ 0.1 Ω with ≈ 7.4 mV across it (I_drain ≈
+   74 mA, within 7 % of the §7.4.4 80 mA target). Step 7D **failed**
+   on the lower Side-B X21 LO ALC cluster — confirmed faults: both
+   Motorola R4D SOIC-8 op-amps (output-to-rail and supply-to-supply
+   internal shorts — powered readings are mirror-symmetric, R4D-A
+   pinned to its local V− net and R4D-B pinned to its local V+ net),
+   **and the two per-chip supply filters that fused open under the
+   short-circuit current draw** (the +15 V leg to R4D-A pin 7 and the
+   −15 V leg to R4D-B pin 4, isolating each dead chip from the global
+   rail — which is why N90's ±15 V supplies next door still read
+   clean). The SOT-23 **A0** detector (re-identified off-line as a
+   two-terminal Schottky single, pin 2 truly NC, by comparison
+   against two other "A0"-marked parts on this PCB) is **stressed
+   but functional** (Vf 0.34 V vs 0.234 / 0.265 V on the healthy
+   refs — still rectifying cleanly), so A0 is **not** the trigger of
+   the R4D cascade — trigger reclassified as **TBD** (candidate
+   hypotheses: upstream LO transient, set-point divider open
+   inducing integrator wind-up, or a supply-rail transient). Failure
+   chain: trigger TBD → R4D-A killed → R4D-B killed → per-chip
+   supply fuses opened → LO collapsed at X21 → A212 starved of LO →
+   X75 / TP1910 dead with bias still nominal. Action now: power off,
+   pull all three silicon parts (R4D-A, R4D-B, and A0 — replace A0
+   anyway as cheap insurance), ohm-check the four R4D supply pads to
+   their bypass caps (two will read open — R4D-A pin 7 leg and
+   R4D-B pin 4 leg) and replace the fused series parts (22 Ω 1206
+   is a safe substitute if the original value is not readable), then
+   fit A0 (**BAT54C** SOT-23 common-cathode dual Schottky, marking
+   `L43`, fitted rotated 180° so the common cathode lands on
+   footprint pin 1; D2 unused. Vf ≈ 0.32 V at 1 mA — closer to the
+   original's barrier than BAS70-05's 0.41 V. BAS70-05 retained as
+   a second-attempt fallback if needed), R4D-A and R4D-B
+   (**MC34071DR2G** chosen for this rebuild
+   — ON Semi (ex-Motorola) SOIC-8 single, ±1.5…±22 V rated,
+   13 V/µs slew, bipolar Darlington input with ground-sensing
+   common-mode range, all-NPN output stage; standard V+ = 7, V− = 4,
+   OUT = 6 pinout. Most likely the same Motorola die family as the
+   original R4D house-mark itself. MC33071 / OP07 / OP27 / TLE2027 /
+   LT1677 also acceptable substitutes — see smp_hw_diag.md §7E.
+   Not OP97: the only OP97 on this PCB is N90, clearly marked
+   `PMI445 / OP97FS`),
+   then re-run Step 7D end-to-end (Step 7E gate, including a fresh
+   `--a21-probe` X75 / TP1910 read). **Pass + TP1910 climbs to
+   7.5 … 11 V → rebuild verified, instrument restored** (no SA work
+   on X21 needed). Pass but X75 still dead → Step 8 X21 doubler SA
+   check (+26…+30 dBm @ 206–234 MHz, ≥30 dB / ≥1 W pad fitted before
+   power-up) **as a contingent diagnostic** → Step 9 re-read X75 →
+   Step 10 IF S21 via VNA → Step 11 diag rectifier on A211.
+   **Recurring-failure escalation:** if new A0 /
+   R4D parts die again within minutes, the on-PCB LO chain
+   (V50/V60/V2/V3/V4) is over-driving X21 — measure absolute X21
+   level on the SA before a third rebuild attempt. See [Physical
+   probe worksheet → Step 7D](smp_hw_diag.md#step-7--a21-bias--a211-comparator-state-measure-dc-voltage-only-if-step-4-shows-x75-dead-with-inputs-present).
 2. **Bench — opportunistic work while the case is open** (same
    teardown): A9 TP1607 aux-osc scope probe, SMP-B15 40 B attenuator
    diagnosis, fan part-number capture. See
@@ -48,12 +113,11 @@ the blocks below are a per-module status register.
 - Board variant confirmed `1035.6199.02` (Var04 Rev03); variant-aware
   specs pinned in `smp_common.A9_SCPI_VAR_MAP`.
 
-**Superseded / retracted:** earlier TP1605 "wrong sign" and
-TP1603 offset diagnoses retracted (multi-path DAC; within zero-scale
-tolerance). QC=128 "power-up latch" hypothesis retracted — the
-fresh-boot capture shows it is live. 6301-spec false-FAILs on TP1604 /
-TP1606 / TP1609 / TP1610 / TP1611 and the "missing VA10.5 collector
-supply to V240/V250" hypothesis are void (6199 board has no V240/V250).
+> Superseded 2026-04-30 — earlier A9 TP1605/TP1603/QC=128/V240-V250
+> retractions moved to
+> [`smp_history.md#H-2026-04-30-tp1605-wrong-sign-retracted`](smp_history.md#h-2026-04-30-tp1605-wrong-sign-retracted).
+> Current verdict: multi-path DAC within zero-scale tolerance; QC=128 live;
+> 6199 board has no V240/V250.
 
 **Board variant:** `1035.6199.02` — confirmed via both SCPI
 (`:DIAG:INFO:MOD?` → `ALCA Var04 Rev03`) and TP1604 discriminator
@@ -249,19 +313,134 @@ clear.)
   be checked on the bench worksheet. Fault is static (not
   frequency-dependent).
 - A26 MUX **exonerated** (all other A26 channels in-spec). A21 power
-  is **exonerated** and W216 is broadly healthy (VARSAMP uses the same
-  rails), but W216.10 itself remains suspect.
-- Fault localised to one of: A21 comb-gen chain (V50/V60 doubler, LO
-  amps V2/V3/V4, V4 step-recovery); A21 diag rectifier; W216.10 pin
-  specifically; or the A7 step-synth drive reaching A21 X50 (no
-  internal SCPI witness at that pin).
-- **Next action:** bench **Step 4 A21 I/O sanity** — the decisive
-  branch point for upstream-input vs. A21-internal faults. Run Step 5
-  only if Step 4 shows X211 absent. See [smp_hw_diag.md](smp_hw_diag.md).
+  is **exonerated** and W216 is broadly healthy: VARSAMP in spec on
+  W216.9, and the W216.10 conductor itself is **exonerated** by
+  Step 2 (DMM at the A21 end of W216.10 reads 0.262 V, matching the
+  SCPI TP1910 reading at the A26 end within meter noise — pin 10 is
+  conducting under load, the dead reading is sourced on A21/A211).
+- Bench Step 4 (`--a21-probe` at 3 GHz CW / POW −30, Siglent SSA):
+  X50 present (+3.75 dBm @ 106.56 MHz, in band-3 §7.1.1 window after
+  cable + DC-block losses), X211 present at the A20/X202 jack
+  (+0.22 dBm @ 2.912533 GHz — off-frequency / bottom-of-spec readings
+  are downstream cascade symptoms of the X75-dead fault per §4, not
+  independent issues), **X75 dead** (< −55 dBm, 0–100 MHz). Decision
+  tree → A21-internal.
+- Bench Step 4.5 (X202↔X211 cable re-torqued at both ends, X50/X75
+  SMBs reseated): X75 **still dead** post-retorque → X202 cable /
+  connector **excluded**.
+- Fault now localised to one of: A21 on-PCB LO chain (V50/V60
+  doubler, LO amps V2/V3/V4, V4 step-recovery) feeding **X21** into
+  the milled casing's comb generator (sub-assembly **A212**);
+  in-casing **A214** pre-mixer RF amplifier (biased by X95 / VG and
+  X96 / VD); the passive Schottky-bridge sampling mixer inside
+  **A212**; in-casing **A212 IF amplifier** (biased by X72 /
+  VA15-IF) whose output leaves on **X70**; on-PCB IF impedance
+  transformer / matching between X70 and X75; A21 diag rectifier on
+  A211; or an A211 bias-control crowbar (N80A–D / V85 / V89 / V90 /
+  V95) having tripped and shut the A214 MMIC supply off.
+- **Bench result — Step 7 A/B passed.** §7.1.7 bias chain is healthy:
+  X95 = −0.72 V (within device-spread tolerance for the A214 GaAs-FET),
+  X96 = +6.17 V, X72 = +14.98 V; OP97 (N90) supplies clean ±15 V with
+  pin 6 at +9.32 V (mid-rail, loop active not saturated); BUZ71 (V90)
+  V_GS ≈ +3.1 V (active region); R98 ≈ 0.1 Ω with V_R98 ≈ 7.4 mV → I_drain
+  ≈ 74 mA, within 7 % of the §7.4.4 80 mA target. No §7.1.7 crowbar
+  tripped. Bias chain is **not** the source of the X75 / TP1910 dead
+  symptom.
+> Superseded 2026-04-30 — full §2 STEP 7D FAILURE-CHAIN banner moved to
+> [`smp_history.md#H-2026-04-30-step-7d-failure-chain-superseded`](smp_history.md#h-2026-04-30-step-7d-failure-chain-superseded).
+> Current verdict: the "dead R4D op-amps + fused filters + stressed A0"
+> failure chain reads instead as expected DC behavior of a healthy
+> class-AB push-pull RF stage (V3 = MRF3866 NPN + V4 = MRF5160 PNP);
+> A0 SOT-23 is the DIAGSAMP envelope rectifier; chips presumed alive
+> pending Step D.5 + Step 8a bench validation. The narrative below this
+> marker is **retained verbatim for FA traceability**.
 
-**Superseded / retracted:** "A7 step-synth marginal → A21 cascade"
-hypothesis was retired when A7 re-measured all-in-spec against the
-authoritative band-2 p.115 ranges (see §3).
+- **Bench result — Step 7D failed** on the X21 LO ALC cluster (lower
+  Side-B). Confirmed faults — two dead silicon parts and two
+  fused-open supply-filter components, plus one stressed-but-
+  functional detector:
+  1. **R4D-A** internal die short (V+↔V− and output↔V+);
+  2. **+15 V supply filter to R4D-A pin 7 — fused OPEN** (per-chip
+     series resistor / ferrite bead opened under the short-circuit
+     current draw, isolating the dead chip from the global rail);
+  3. **R4D-B** internal die short (V+↔V− and output↔V+);
+  4. **−15 V supply filter to R4D-B pin 4 — fused OPEN** (same
+     mechanism on the −15 V leg).
+  5. SOT-23 **A0** detector (re-identified off-line as a
+     two-terminal Schottky single, pin 2 truly NC, by comparison
+     against two other "A0"-marked parts on this PCB): **stressed
+     but functional** — Vf 0.34 V forward (3→1) vs 0.234 / 0.265 V
+     on the healthy refs, OL reverse. Earlier "shorted in reverse
+     breakdown" reading was in-circuit and is contradicted by the
+     comparison test. A0 is therefore **not** the trigger of #1 / #3;
+     replace anyway during the rebuild as cheap insurance.
+
+  Powered readings on the R4D pair are mirror-symmetric — every pin
+  on R4D-A pinned to its local V− net (≈ −14.7 / −15.2 V), every pin
+  on R4D-B pinned to its local V+ net (≈ +14.5 / +15.1 V), with B4
+  − B7 = +0.62 V (one Vbe), the textbook signature of a chip with an
+  internal V+↔V− short whose upstream supply path on the *other*
+  rail has gone open. The OP97 (N90) next door still reads clean
+  ±15 V on its supplies, confirming the global rails are healthy and
+  the opens are local per-chip filter elements, not the rail itself.
+
+  Failure chain to symptom: **trigger TBD → R4D-A killed → R4D-B
+  killed → per-chip supply fuses opened (saving the global rail) →
+  LO drive at X21 collapsed → A212 starved of LO → X75 / TP1910
+  dead** with §7.1.7 bias still nominal — a clean explanation for
+  the observed "Step 7 passes but X75 stays dead" pattern. A0 was
+  originally hypothesised as the trigger; the comparison test
+  against reference parts demoted A0 to "stressed but functional",
+  so the trigger is now under re-investigation (candidate
+  hypotheses: upstream LO transient surviving past A0, set-point
+  divider open inducing integrator wind-up, supply-rail transient).
+- **Next action:** **Step 7E A211 ALC rebuild + verification**.
+  Power off A211 before any soldering per §7.4 / §7.5. Pull all three
+  failed silicon parts. With the chips out, run a 30-second pad-to-
+  rail DMM ohm check on the four R4D supply pads — two will read
+  open (R4D-A pin 7 leg and R4D-B pin 4 leg per the mirror-symmetric
+  analysis above); locate and replace the fused series filter parts
+  (in-kind if the value is readable, otherwise a 22 Ω 1206 is a safe
+  substitute — current-limit role only). Then fit replacements: A0
+  (**BAT54C** SOT-23 common-cathode dual Schottky, marking `L43`,
+  fitted rotated 180° so the common cathode lands on footprint pin 1
+  / anode of D1 on footprint pin 3; D2 unused with its anode on
+  footprint pin 2 / NC — completely benign. Vf ≈ 0.32 V at 1 mA,
+  closer to the original's barrier than BAS70-05's 0.41 V. BAS70-05
+  also on hand as a second-attempt fallback (identical SOT-23
+  topology and rotation rule, slightly higher Vf). HSMS-282C/K or
+  HSMS-286C/K available as SOT-323 alternatives with bench-bodge
+  fit; HSMS-2822 fits SOT-23 but needs a pad-2 solder bridge to use
+  one of its diodes. See smp_hw_diag.md Step 7E for full
+  alternatives), R4D-A and R4D-B
+  (**MC34071DR2G** for this rebuild — ON Semi (ex-Motorola) SOIC-8
+  single, ±1.5…±22 V rated, 13 V/µs slew, bipolar Darlington
+  input with ground-sensing common-mode range, all-NPN output stage;
+  standard V+ = 7, V− = 4, OUT = 6 pinout. Most likely the same
+  Motorola die family as the original "R4D" house-mark itself.
+  MC33071 / OP07 / OP27 / TLE2027 / LT1677 also acceptable
+  substitutes — see smp_hw_diag.md §7E. *Not* OP97 — N90 on this
+  PCB is the only OP97FS, clearly marked `PMI445 / OP97FS`). After
+  rebuild, re-run
+  Step 7D rows 1–6 + the R4D-B supply rows 4a / 4b (mid-rail outputs,
+  clean ±V on every supply pin, finite drop across 3R92), re-read
+  X75 / TP1910 from the same `--a21-probe` output, and re-confirm
+  Step 7 A/B still passes. **Pass + TP1910 climbs to 7.5 … 11 V →
+  rebuild verified, no further steps required.** Pass but X75 still
+  dead → **Step 8** X21 doubler spectrum on SA via ≥30 dB / ≥1 W pad
+  (contingent diagnostic only — do **not** SA-probe X21 before
+  fitting the pad; X21 carries up to +30 dBm = 1 W) → Step 9 re-read
+  X75 → Step 10 on-PCB IF |S21| via VNA, X70↔X75, with the A212 IF
+  amp powered → Step 11 diag rectifier on A211.
+  **Recurring-failure escalation:** if the new A0 / R4D parts die
+  again shortly after power-up, the on-PCB LO chain (V50/V60/V2/V3/V4)
+  is over-driving X21 — measure absolute X21 power on the SA before
+  attempting a third rebuild. See [smp_hw_diag.md → Step 7D](smp_hw_diag.md#step-7--a21-bias--a211-comparator-state-measure-dc-voltage-only-if-step-4-shows-x75-dead-with-inputs-present).
+
+> Superseded 2026-04-30 — "A7 step-synth marginal → A21 cascade"
+> retraction moved to
+> [`smp_history.md#H-2026-04-30-a7-step-synth-marginal-retired`](smp_history.md#h-2026-04-30-a7-step-synth-marginal-retired).
+> Current verdict: A7 re-measured all-in-spec against band-2 p.115 ranges (see §3).
 
 Measured on A26's diagnostic multiplexer via cable W216.10. Per band-3
 §7.6 (p.147), A21 has no digital interface of its own; all A21
@@ -277,8 +456,10 @@ A21-sourced voltages are routed to A26's MUX via cable W216):
 | 1910 | W216.10 | DIAGSAMP — comb-gen diag from A21 | 0.22 V | 7.5–11 V | **FAIL** — dead |
 
 **Functional test (`smp_test.py -m A21`):** ❌ FAIL — TP1910 dead,
-TP1902 OK → differential verdict **"A21 powered and grounded; comb-
-gen chain or W216.10 conductor is the fault"**.
+TP1902 OK → differential verdict **"A21 powered and grounded; A21
+LO chain (comb-gen / mixer / IF amp) or A211 diag rectifier /
+comparator is the fault"** (W216.10 originally on this list, now
+exonerated by Step 2 bench measurement).
 
 **Deep test (`smp_test.py -m A21 -d`):** ❌ DEEP FAIL — TP1910 flat at
 0.21–0.25 V across all 25 frequencies (10 MHz to 20 GHz), TP1902 flat
@@ -299,35 +480,72 @@ failure (power, comb diode, diag rectifier, or conductor).
   TP1902 VARSAMP is sourced from the same A21 card and arrives via
   W216.9 in spec at 0.9–1.1 V. VARSAMP needs W216.1 (+15 V), W216.4
   (+7.5 V), W216.5 (−15 V) and the ground pins (2/3/6/7/8). If any
-  of these were broken, both witnesses would fail. W216.10 itself is
-  still not excluded.
+  of these were broken, both witnesses would fail. **W216.10 is
+  exonerated** by Step 2: DMM at the A21 end reads 0.262 V vs. SCPI
+  TP1910 at the A26 end at 0.21–0.25 V — the conductor is intact
+  under load, the dead reading is sourced on A21/A211.
+  - **Follow-up — W216 supply-rail marginality.** Bench DMM at the
+    A21 end of W216 reads pin 1 = **+15.28 V** (band-3 p.148 limit
+    +15.25 V, +30 mV over) and pin 5 = **−15.35 V** (limit −15.25 V,
+    −100 mV beyond). A2's own TPs read clean (+15.02 V / −15.05 V at
+    TP300 / TP306, see [A2 Supply Voltages](#a2-supply-voltages--definitively-healthy)),
+    so the skew is introduced between A2 and the W216 A21 end (A26
+    distribution / connector drops, or DMM-vs-SCPI calibration offset).
+    No fault witness currently depends on it; revisit only if another
+    A26-fed board shows the same A2-clean / W216-end-skewed pattern.
+    See [smp_hw_diag.md Step 2 run results](smp_hw_diag.md#step-2--w216-rail-voltages-measure-dc-voltage-instrument-on).
 
-The fault is therefore localized to **one of**:
+The fault is therefore localized to **one of** (post Step 4 / 4.5,
+A21-internal):
 
-1. A21's doubler (V50/V60) / LO amplifier (V2/V3/V4) / comb generator
-   (V4 step-recovery) chain
-2. A21's diag-rectifier feeding DIAGSAMP
-3. The W216.10 conductor specifically (pin 10 alone, not the cable
-   as a whole)
-4. A7 step synthesis signal not reaching A21 X50 at the required
-   +4…+6 dBm / 103…117 MHz (TestA7 passes on A7-internal TPs but
-   cannot see whether the cable reaches A21)
+1. A21 doubler (V50/V60) / LO amplifier (V2/V3/V4) / comb generator
+   (V4 step-recovery) chain — verifiable at X21 (Step 8, expected
+   +26…+30 dBm @ 206–234 MHz)
+2. Sampling mixer (V1.1/V1.2 Schottky pair) or IF amp V75 /
+   impedance transformer — verifiable by re-reading X75 once X21 is
+   confirmed at spec (Step 9), or VNA S21 X70→X75 (Step 10)
+3. A21 diag rectifier on A211 feeding DIAGSAMP — covered by Step 11
+   (DC at the rectifier output should track X21 spec)
+4. A211 bias-control crowbar tripped (N80A–D / V85 / V89 / V90 / V95)
+   shutting the MMIC supply off on a failed controlled-supply voltage
+   — covered first by Step 7 (X95 / X96 bias + comparator logic state)
 
-→ **Bench procedure: [Physical probe worksheet (smp_hw_diag.md)](smp_hw_diag.md)** — prerequisites, external-drive exoneration, internal-fault localisation (Steps 1–11).
+**Excluded** by bench Steps 1, 2, 4, 4.5: W216 cable (all pins,
+including pin 10 under load), A20 / X211 cable (X211 present at YIG
+output, X202 cable re-torqued without effect), A7 → A21 X50 path
+(X50 +3.75 dBm @ 106.56 MHz at the A21 connector — in spec after
+test-cable + DC-block losses, leaving A7 in the clear corroborated
+by §3 retraction).
 
-**A21 signal chain** (band-3 §7.1, p.144):
+→ **Bench procedure: [Physical probe worksheet (smp_hw_diag.md)](smp_hw_diag.md)** — current entry point [Step 7 (A21 bias + A211 comparators)](smp_hw_diag.md#step-7--a21-bias--a211-comparator-state-measure-dc-voltage-only-if-step-4-shows-x75-dead-with-inputs-present).
+
+**A21 signal chain** (band-3 §7.1, p.144; A211 daughter board sits on
+top of a milled casing that contains sub-assemblies **A212** (comb
+generator + passive Schottky sampling mixer + IF amplifier), **A213**
+(LPF on the X211 RF path), and **A214** (pre-mixer RF amplifier);
+PCB ↔ casing connectors per drawing 1035.8840.01, band-3 p.156):
 
 1. A7 step synthesis (103–117 MHz, +4…+6 dBm, p.148 FSTEP) → A21 **X50**
-2. Doubler V50/V60 → LO amplifiers V2, V3, V4 → **X21** (spec
-   26–30 dBm in the 206–234 MHz band, p.146 §7.4.1)
-3. Comb generator (V4 step-recovery diode) → X216 (2–20 GHz LO comb)
-4. Sampling mixer (V1.1/V1.2 Schottky pair) mixes X216 LO with X211
-   (YIG RF from A20) → IF at X70 (p.144 §7.1.4)
-5. IF amplifier V75 → **X75** (10–80 MHz, −5…+15 dBm → A10 YIG-PLL,
-   p.145 §7.1.6, p.148 FSTEP)
+2. On-PCB LO chain: doubler V50/V60 → LO amplifiers V2, V3, V4 →
+   step-recovery V4 → **X21 (LO into milled casing's A212 comb
+   generator)** (spec +26…+30 dBm in the 206–234 MHz band at the
+   doubler tap, p.146 §7.4.1)
+3. Inside casing: **A212** comb generator forms the 2–20 GHz LO comb
+   driving the passive Schottky-bridge sampling mixer (V1.1 / V1.2);
+   in parallel, **A214** is the pre-mixer RF amplifier on the X211
+   path, biased via **X95 (VG, −0.5 V)** and **X96 (VD, +6.3 V)**
+   from A211 (the sampling mixer itself is passive — no DC bias)
+4. **X211** (YIG RF from A20, 2–20 GHz) → **A213** LPF → **A214**
+   pre-mixer amp → A212 sampling mixer RF port; mixer IF → **A212
+   IF amplifier** (≈ +27 dB, biased via **X72 / VA15-IF** from A211)
+   → **X70 (IF out of casing → A211)** (p.144 §7.1.4)
+5. On-PCB IF impedance transformer / matching between X70 and X75
+   (L72 LP filter + decoupling; V75's role on the PCB pending
+   physical confirmation against p.156) → **X75** (10–80 MHz,
+   −5…+15 dBm → A10 YIG-PLL, p.145 §7.1.6, p.148 FSTEP)
 6. Bias control on daughter board A211 (1035.8840.02): N80A–D / V85 /
-   V89 / V90 / V95 — comparators shut the MMIC supply off on failure
-   of a controlled supply voltage (p.145 §7.1.7)
+   V89 / V90 / V95 — comparators shut the A214 MMIC supply off
+   (X95/X96) on failure of a controlled supply voltage (p.145 §7.1.7)
 
 ### 3. A7 Reference/Step Synthesis — RETRACTED (all in spec)
 
@@ -393,14 +611,13 @@ marginality is driving A8 buffer-VCO intermittency" hypothesis.)
 - **Next action:** re-run `smp_test.py -m A10 -d` after A21 repair;
   expect TP1807 → ±3 V window. TP1800 +12 mV marginality: no action.
 
-**Superseded / retracted:** earlier "TP1802 sign-inversion / summing-
-stage" diagnosis was a mis-binding of the p.163 formula's `V1` — TP1802
-is positive per §7.4.2 `U1 = 8…12 V` and in spec on this unit. The
-band-1 p.108 / band-2 p.168 TP-table entry giving TP1802 = `−12…−0.8 V`
-is either an OCR artefact or refers to a tap upstream of a buffer
-inversion; §7.4.2 is treated as the measurement-procedure authority.
-Spec-window bugs in `smp_diag.py` / `smp_test.py` TP1802 checks are
-follow-up cleanup (details below).
+> Superseded 2026-04-30 — earlier TP1802 "sign-inversion / summing-stage"
+> retraction moved to
+> [`smp_history.md#H-2026-04-30-tp1802-sign-inversion-retracted`](smp_history.md#h-2026-04-30-tp1802-sign-inversion-retracted).
+> Current verdict: TP1802 is positive per §7.4.2 `U1 = 8…12 V` and in spec
+> on this unit; §7.4.2 is the measurement-procedure authority. Spec-window
+> bugs in `smp_diag.py` / `smp_test.py` TP1802 checks are follow-up cleanup
+> (details below).
 
 **Summary after extended deep sweep** (`smp_test.py -m A10 -d`,
 25 frequencies 10 MHz–20 GHz):
@@ -582,11 +799,11 @@ output simultaneously.
   [Next actions](#next-actions) → 2). Localised to 40 B section, not a
   generic ribbon issue.
 
-**Superseded / retracted:** earlier "reseat helps, regresses"
-intermittency theory is retired — the reseat only "helped" because
-preceding operations left the attenuator at 0 dB (40 B in THRU); any
-subsequent high-att use drove 40 B back into ATT and TP1914 back to
-ground.
+> Superseded 2026-04-30 — earlier A19 "reseat helps, regresses"
+> retraction moved to
+> [`smp_history.md#H-2026-04-30-att-reseat-helps-retired`](smp_history.md#h-2026-04-30-att-reseat-helps-retired).
+> Current verdict: 40 B section couples deterministically to TP1914 ID line
+> when in ATT (drives it to ground); not intermittent.
 
 | Condition | Reading | Expected | Status |
 |-----------|---------|----------|--------|
@@ -706,16 +923,12 @@ then rejected. Expected to clear once 40 B is fixed.
 - **Next action (desk)**: re-run `--boot-snap` across additional power
   cycles to firm up the err-221 rate statistics.
 
-**Superseded / retracted:**
-
-- "TP0305 = 11.24 V is below spec" retired — the 12–20 V window
-  applies at `:FREQ 1 GHz`, not at preset. At 1 GHz the reading is
-  17.54 V (in spec).
-- "A7 reference marginality drives the buffer-VCO intermittency"
-  retired now that §3 A7 re-measures all-in-spec.
-- Earlier "A8 OK" classification in the `## Modules OK` section is
-  partially superseded: standard DDS sweep still passes, but the boot
-  err 221 is on a separate sub-loop not covered by that test.
+> Superseded 2026-04-30 — earlier A8 TP0305 / A7 marginality / A8-OK
+> retractions moved to
+> [`smp_history.md#H-2026-04-30-tp0305-and-a7-marginality-retired`](smp_history.md#h-2026-04-30-tp0305-and-a7-marginality-retired).
+> Current verdict: TP0305 in spec at manual's test condition (`:FREQ 1 GHz`);
+> A7 re-measures all-in-spec; A8 boot err 221 is on a separate sub-loop
+> (intermittent, see 6a below).
 
 **6a. Err 221 "Digital synthesis buffer VCO unlocked" at power-up —
 intermittent.** `--boot-snap` captures across fresh boots:
@@ -1249,10 +1462,12 @@ commands blind risks:
    the fault is in the DAC (fixed output regardless of command) or in
    the aux-osc stage itself (responds to DAC but at wrong voltage).
 
-4. **`REFSS` force-step to verify A7 → A21 X50 link.** A7 passes all
+4. **`REFSS` force-step to verify A7 → A21 X50 link.** ~~A7 passes all
    its internal TPs, but the signal reaching A21 X50 has not been
-   independently confirmed. `REFSS` could freeze A7 at a specific step
-   frequency while a scope on the W? cable to A21 verifies level.
+   independently confirmed.~~ Superseded — bench Step 4 confirmed X50
+   at +3.75 dBm @ 106.56 MHz at the A21 connector (in spec after
+   test-cable + DC-block losses), so A7 → A21 X50 no longer needs
+   independent verification.
 
 **When to revisit:**
 

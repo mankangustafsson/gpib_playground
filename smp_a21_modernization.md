@@ -5,6 +5,11 @@ Sampling Phase Detector (SPD). The milled microwave casing (SRD comb generator +
 Schottky sampling bridge + isolator + IF transformer) is replaced with a single
 packaged SPD; the rest of the SMP (A7, A10, A20, A26) is untouched.
 
+> **Historical / superseded content** is moved to
+> [`smp_history.md`](smp_history.md). Inline supersession markers in
+> this doc point to specific anchors there. The doc body itself
+> always reflects current truth.
+
 ## Goals
 
 - Preserve every external interface of A21 so the surrounding modules (A7 REFSS,
@@ -40,15 +45,292 @@ packaged SPD; the rest of the SMP (A7, A10, A20, A26) is untouched.
 The LO drive is re‑budgeted to **+19 dBm** after the output pad so the MSPD2018
 sees a level centred in its +17…+23 dBm window. The X21 chassis test point from
 the original factory procedure is dropped — the modernized module is "no factory
-cal required", and bring‑up / debug measurements use the J1' SMP board‑to‑board
-bullet‑pull on the LO line instead (see Build 2 verification, below).
+cal required", and bring‑up / debug measurements use the **U.FL LO test pad in
+the routing gap between C1 and C2** (D ≈ 40, H ≈ 60..73) on the FR‑4 main board
+instead (see Build 2 verification, below).
+
+## Mechanical envelope (measured)
+
+External dimensions of the in‑hand A21 unit, caliper measurement
+(2026‑04). Chassis‑coordinate axes: D = depth (front↔back of the
+instrument), H = vertical, W = thickness across the chassis.
+
+| Element | D × H × W (mm) | Notes |
+|---|---|---|
+| Outer module casing (grey) | **57 × 116 × 23** | Full envelope of the original module: includes A211 PCB compartment, end caps, X75 SMB, and the W216 harness header |
+| Milled microwave casing | **40 × 60 × 16** | Microwave kernel only (SRD comb generator + Schottky bridge + isolator + IF transformer); the part replaced by MSPD2018‑E50 + Rogers daughter. **A separate adjacent block, not nested inside the grey casing** — sits beside one long (116 mm) face of the grey case, centered in H with **~28 mm of empty chassis volume above and below it**, and a **7 mm gap in D** between the two cases (an air gap originally hosting 5 direct‑mate SMB bulkheads between the A211 PCB and the milled‑case innards). **Carries X211 (3.5 mm RF input) on its top short (40 × 16) end face** at chassis H ≈ 78 in the original. The modernization deletes the milled casing entirely; **the original grey case is also not reused** (a new chassis is built around the compound FR‑4 + carrier‑extension outline — see *Architecture decision (2026‑04‑26): lateral carrier topology*), so the X211 cutout is re‑drawn at the same H ≈ 78 in the new chassis north‑east face but is **not** literally the original hole. X50 / X75 / W216 cutouts are held to the original A21 chassis‑side geometry so the host harness reaches without rework. |
+| Chassis slot (W headroom) | **≥ 31** in W (one‑sided) | Original 23 mm casing + **≥ 8 mm** of free space on **one side** of the module, between the existing casing and the next neighbour. Growth on the W axis is asymmetric — the harness‑header / W216 face stays put, the opposite face may extend by up to ~8 mm |
+| A211 PCB tab (W216 carrier) | **8 × 28** *(projecting)* | Original A211 PCB protrudes **8 mm × 28 mm** beyond the grey casing at **one end of a long (116 mm) edge**, carrying the W216 2×5 header (the header body itself is small, ~17 × 9 × 9 mm — see W216 BOM row). The new FR‑4 main inherits this tab geometry for drop‑in compatibility with the existing chassis cutout. |
+| SMB pocket (X50, X75) | **7** in W (opposite face) | Gap between the milled microwave casing and the grey outer wall on **one W face only** (= 23 − 16 mm). Hosts the X50 + X75 right‑angle SMB bodies on the A211 PCB; their barrels exit through the same long‑edge casing wall as the W216 tab. **Independent of the 8 mm growth headroom**, which is on the opposite W face. |
+
+> Superseded 2026-04-30 — full "Original drop-in constraint" block + 4
+> context bullets moved to
+> [`smp_history.md#H-2026-04-26-original-drop-in-constraint`](smp_history.md#h-2026-04-26-original-drop-in-constraint).
+> Current verdict: design moved to a new chassis built around the compound
+> FR-4 + carrier-extension outline (~82 D × 100 H mm); X211 stays on Rogers;
+> daughter mounts laterally on a carrier extension over a Samtec ERM8/ERF8
+> BTB. See *Architecture decision (2026-04-26): lateral carrier topology*
+> below. Original 57 × 116 × 23 mm grey-case envelope is retained only as
+> the neighbour-slot envelope (≤ 57 mm D, ≤ 116 mm H, ≤ ~31 mm W).
+
+## Architecture decision (2026‑04‑26): lateral carrier topology
+
+Late in the design conversation the topology pivoted from a "stacked
+SMP‑bullet" arrangement (Rogers daughter sandwiched directly above the
+FR‑4 main, joined by 2× SMP bullets across a 5–6 mm vertical gap) to a
+**lateral carrier** arrangement: the FR‑4 PCB extends as a peninsula
+**east in +D** from the main body, and the Rogers daughter mounts on
+top of that peninsula on **7 mm M2 brass standoffs** matched to a
+single 20‑pin Samtec **ERM8/ERF8** vertical‑mate BTB. The Rogers
+daughter carries its own X211 3.5 mm edge‑launch on the east short
+edge at **D = 82, H = 78**. The original A21 grey case is **not
+reused**: a new chassis is built around the compound FR‑4 outline
+(~82 D × 100 H mm), with the X50 / X75 / W216 connectors held to the
+original A21 cable geometry so the host harness reaches without
+rework. All earlier text in this document describing SMP bullets, a
+stacked daughter sandwich, a clean‑rectangle FR‑4 outline, or reuse
+of the original chassis is **superseded** by this section.
+
+### Topology summary
+
+| # | Decision | Value |
+|---|---|---|
+| 1  | Topology | FR‑4 carrier; Rogers stacked on top of the carrier extension on a vertical‑mate BTB |
+| 2  | FR‑4 outline | Compound: **41 D × 100 H mm main body** + **41 D × 47 H mm carrier extension** (peninsula extending **east in +D** from the main body, occupying D = 41..82, H = 35..82). W216 sits at the south‑west corner of the main body (D = 0..10, H = 0..17); no projecting tab. |
+| 3  | Rogers mounting | 4× M2 brass standoffs to FR‑4 carrier; **7 mm stack height** set by the BTB mate (ERM8 −02.0 / ERF8 −05.0) and matched by standoff length |
+| 4  | Rogers RF ground | Continuous FR‑4 inner ground plane directly under the daughter; no chassis‑floor return path |
+| 5  | DC bias to Rogers | Routed as traces in the FR‑4 carrier into the BTB connector. **No ribbon harness, no inter‑cavity DC pass‑through.** |
+| 6  | X211 (3.5 mm RF in) | Edge‑launched on the Rogers **east short edge** at **D = 82, H = 78**; cable exits +D through a chassis east‑face cutout |
+| 7  | Chassis | New chassis sized to the new PCB footprint; original grey case is **not** reused. Compound FR‑4 outline drives the chassis envelope; module overall ~82 D × 100 H mm. |
+| 8  | Bench connectors | **X50 SMB** at D = 0, H = 35 (LO ref input); **X75 SMB** at D = 0, H = 98 (IF output); **W216 EHF‑117 2×5 header** at D = 0..10, H = 0..17 (top mate). All matched to the original A21 cable geometry (X50/X75 H positions identical, W212/W213 angle directions retained) so existing harness reaches without rework. |
+| 9  | Inter‑board interconnect | **1× Samtec ERM8/ERF8 20‑pin BTB** (10 × 2, 0.8 mm pitch, vertical mate): header `ERM8-010-02.0-L-DV-TR` on FR‑4 carrier extension, socket `ERF8-010-05.0-S-DV-TR` on Rogers underside. Carries LO + IF + DC + GND on a single connector. Replaces the prior SMP bullets + Samtec FTS/CLM header pair. |
+| 10 | Compartments (RF) | 2× Laird **BMI‑S‑205‑F + BMI‑S‑205‑C** two‑piece SMD shield cans (38.1 × 25.4 × 6.0 mm) — one over C1 (LO chain), one over C2 (IF chain). Frame solders to FR‑4 perimeter; cover is removable for bring‑up access. Milled aluminum lids held as fallback if SMD cans prove insufficient. |
+| 11 | LO / IF probe access | 2× U.FL test pads on the FR‑4 main body in the routing gap between C1 and C2 (D ≈ 40, H ≈ 60..73 strip) |
+| 12 | 2–20 GHz probe access | Optional DNP SMP pads on Rogers (AVA in, AVA out, MSPD RF) — populated only during bring‑up |
+
+### BTB pinout (20‑pin, 10 × 2, 0.8 mm pitch, GND‑fenced, vertical mate)
+
+Header `ERM8-010-02.0-L-DV-TR` on FR‑4 carrier extension at **D = 64..70, H = 55..69**. Socket `ERF8-010-05.0-S-DV-TR` on Rogers daughter underside (south face), aligned to the same footprint. Pin 1 sits at the **south end** of the connector (small H), placing LO drive closest to C1 (north wall at H ≈ 35..60) and IF return closest to C2 (north wall at H ≈ 73..98) to minimise carrier‑extension trace lengths.
+
+| Pin | Row A | Row B | Notes |
+|---|---|---|---|
+| 1  | GND        | GND        | south guard |
+| 2  | LO drive   | GND        | G‑S‑G for LO (230 MHz, +19 dBm); shortest path to C1 north wall |
+| 3  | GND        | GND        | |
+| 4  | +10 V      | +10 V      | AVA Vd, paralleled (3 pins total across rows 4–5) |
+| 5  | +10 V      | V_GG1      | third +10 V pin; V_GG1 ≈ −0.8 V is low‑current bias |
+| 6  | GND        | GND        | DC / control isolation strip |
+| 7  | DRAIN_KILL | GND        | low‑current control |
+| 8  | GND        | GND        | |
+| 9  | IF return  | GND        | G‑S‑G for IF (10–80 MHz); shortest path to C2 north wall |
+| 10 | GND        | GND        | north guard |
+
+7 active signals (LO, IF, +10 V × 3, V_GG1, DRAIN_KILL) + 13 GND
+pins. The **3× paralleled +10 V pins** drop AVA‑223MP+ rail
+inductance to ~0.5 nH and give 4.2 A current capacity against
+~300 mA actual draw — comfortable transient margin during
+DRAIN_KILL switching events. V_GG2 (gate 2) is generated locally
+on Rogers from the +10 V drain rail; MSPD2018‑E50 is passive and
+consumes no daughter‑side bias.
+
+**Connector family:** Samtec **ERM8/ERF8** Edge Rate® (rugged,
+controlled‑impedance footprint, hand‑solderable, 28 GHz spec —
+far over‑specified for 230 MHz but the SI margin is free). Direct
+mate per Samtec product pages; **mated stack height 7 mm** for the
+−02.0 / −05.0 lead‑style pair. The stack height is the gating
+dimension for what fits on the FR‑4 carrier extension underneath
+the Rogers daughter (~4.5 mm clearance after Rogers thickness and
+solder mask): ground pour and routing only — no compartments or
+tall components in that zone.
+
+### Floorplan — plan view (looking down the W axis)
+
+Rogers daughter is drawn as a dashed overlay because it sits **on top
+of** the FR‑4 carrier extension in W, lifted **7 mm** above the FR‑4
+top surface by the mated ERM8/ERF8 BTB stack (M2 brass standoffs at
+the four Rogers corners are length‑matched to the connector mate
+height). Both occupy the same H/D footprint band on the carrier
+extension.
+
+H runs left‑to‑right (0..100 main body, +47 of overlap on the carrier
+extension at H = 35..82). D runs top‑to‑bottom in the drawing (D = 82
+at top of carrier extension, D = 0 at the I/O face at the bottom).
+
+```
+                H = 0   17   32   35     50      60   73    82    98 100
+                  |     |    |    |      |       |    |     |     |  |
+   D = 82         .              +-----------------------------------+
+                  .              |  FR‑4 carrier extension           |
+                  .              |  (peninsula, +D from main body)   |
+                  .              |  D = 41..82, H = 35..82           |
+                  .              |                                   |
+                  .              |   +- - - - - - - - - - - - - +    |  X211
+                  .  CHASSIS     |   |  Rogers daughter overlay |    |  3.5 mm
+                  .  AIR /       |   |  (ON STANDOFFS, +7 mm W) |    |  edge‑
+                  .  SOUTH       |   |  D = 57..82, H = 38..78  |    |  launch
+                  .  HARNESS     |   |  25 D × 40 H Rogers      |    |  on Rogers
+                  .  RUN         |   |  RO4350B 0.51 mm         |    |  east
+                  .              |   |   LIM→AVA‑223MP+→Pad3→   |    |  short
+                  .              |   |   MSPD2018‑E50→X211      |    |  edge
+                  .              |   |   DNP SMP test pads (3×) |    |  D = 82
+                  .              |   |                          |    |  H = 78
+   D = 64..70     .              |   |  [ BTB Samtec ERM8/ERF8  |    |  cable
+                  .              |   |    20‑pin vert. mate,    |    |  exits +D
+                  .              |   |    body D=64..70,        |    |  through
+                  .              |   |    H=55..69 ]            |    |  chassis
+                  .              |   +- - - - - - - - - - - - - +    |  north‑
+                  .              |                                   |  east
+   D = 41         +--------------+-----------------------------------+  cutout
+                  |                                                  |
+                  |  +--------+  +-----------------------------+     |
+                  |  |        |  |                             |     |
+                  |  | W216   |  |   SUPERVISOR QUADRANT       |     |
+                  |  | EHF‑   |  |   D = 10..41, H = 0..32     |     |
+                  |  | 117    |  |                             |     |
+                  |  | 2×5    |  |   • LDO #1 LT3045 (1.5 W,   |     |
+                  |  | header |  |     +10 V AVA drain rail)   |     |
+                  |  | top    |  |   • LDO #2 (0.45 W, LO‑drv) |     |
+                  |  | mate   |  |   • TPS3808 + TLV9004 +     |     |
+                  |  | D=0..10|  |     BSS308PE DRAIN_KILL FET |     |
+                  |  | H=0..17|  |   • WIN_REF / DIAGSAMP det. |     |
+                  |  +--------+  |   • LED bank                |     |
+                  |              +-----------------------------+     |
+                  |                                                  |
+                  |    +--- C1 — LO chain (Laird BMI‑S‑205‑F) ---+   |
+                  |    |  38.1 D × 25.4 H × 6.0 W mm two‑piece   |   |
+                  |    |  D ≈ 1.5..39.6, H = 35..60              |   |
+                  |    |  Pad1→JMS‑1H+→BFCN‑212+→PGA‑103+(U2a)→  |   |
+                  |    |  Pad_IS→PGA‑103+(U2b)→Pad2→ east edge   |   |
+                  |    |  → BTB pin A2 (LO drive) on extension   |   |
+                  |    +-----------------------------------------+   |
+                  |                                                  |
+                  |    +--- routing / U.FL test pads (H≈60..73) -+   |
+                  |    |  2× U.FL pads in gap between cans       |   |
+                  |    |  (LO sample / IF probe), low GND impact |   |
+                  |    +-----------------------------------------+   |
+                  |                                                  |
+                  |    +--- C2 — IF chain (Laird BMI‑S‑205‑F) ---+   |
+                  |    |  38.1 D × 25.4 H × 6.0 W mm two‑piece   |   |
+                  |    |  D ≈ 1.5..39.6, H = 73..98              |   |
+                  |    |  east edge ← BTB pin A9 (IF return) →   |   |
+                  |    |  LFCN‑105+ → 2‑stage series LC notch →  |   |
+                  |    |  AG302‑86G → Pad_OS → west edge → X75   |   |
+                  |    +-----------------------------------------+   |
+                  |                                                  |
+   D = 0          +-+----o-----------------------------------o-------+
+                    | X50 SMB R/A                            X75 SMB R/A
+                    | D = 0, H = 35                          D = 0, H = 98
+                    | cable exits −H (south)                 cable exits +H (north)
+                    | toward south chassis                   toward north chassis
+                    | wall, then up to +W                    wall, then up to +W
+                    | along original W212 path               along original W213 path
+
+  I/O face (D = 0, H = 0..100):
+    • W216 EHF‑117 2×5 header (top mate, body D=0..10, H=0..17 ─
+      chassis cutout above the header in +W to admit the cable)
+    • X50 SMB right‑angle (LO ref input, 103–117 MHz, H = 35)
+    • X75 SMB right‑angle (IF output, 10–80 MHz, H = 98)
+  Carrier extension top face (D = 41..82, H = 35..82):
+    • Rogers daughter on 7 mm M2 standoffs, mated via 20‑pin BTB
+    • U.FL probe pads optionally on extension top in the routing
+      band between BTB and Rogers footprint (TBD at layout review)
+  Rogers east short edge (D = 82, H = 78):
+    • X211 3.5 mm edge‑launch (2–20 GHz), cable exits +D through
+      a north‑east chassis cutout (one‑off cutout, no harness mod)
+```
+
+**Side view through the BTB column (W axis vertical):**
+
+```
+                     ┌────────────────────────┐
+                     │  Rogers daughter top   │  0.51 mm Rogers RO4350B
+                     │  AVA + MSPD + traces   │  (4‑metallised: TOP / GND
+                     ├────────────────────────┤   / GND / BOT)
+                     │  Rogers GND pour       │
+                     └─┬──────────────────┬───┘
+                       │                  │
+                       │  ERM8/ERF8 BTB   │  M2 brass standoff ×4
+              7 mm     │  (Samtec, 20‑pin │  L = 7 mm, length‑matched
+              mated    │   vertical mate, │  to BTB mated stack so
+              stack    │   −02.0 / −05.0  │  Rogers sits parallel and
+                       │   lead pair)     │  unloaded at the connector
+                       │                  │
+                     ┌─┴──────────────────┴───┐
+                     │  FR‑4 carrier‑extension│
+                     │  top: GND + DC routing │  1.6 mm FR‑4 4‑layer
+                     │  only (~4.5 mm clear   │  (TOP / GND / PWR / BOT)
+                     │  under Rogers ─ no     │
+                     │  compartments here)    │
+                     │                        │
+                     │  Inner GND plane:      │
+                     │  continuous under all  │
+                     │  of the Rogers         │
+                     │  footprint             │
+                     └────────────────────────┘
+                       FR‑4 main / carrier
+                       (single PCB, compound outline)
+```
+
+### What this changes vs the older sections of this document
+
+- **SMP bullets, SMP‑MSSB jacks, SMP‑FS2A‑645, and the 2×3 1.27 mm
+  Samtec FTS/CLM header pair** are all dropped. Bucket F is re‑costed
+  against a single Samtec ERM8/ERF8 20‑pin BTB pair (~$15) plus
+  optional 2× U.FL test pads (~$2).
+- **X211 stays on Rogers** but moves to the **east short edge**
+  (D = 82, H = 78) so the cable exits +D into a new north‑east
+  chassis cutout. The original A21 chassis is **not reused** — a new
+  enclosure is built around the compound FR‑4 outline — so the cutout
+  is free to place wherever convenient.
+- **FR‑4 outline is compound** (41 × 100 main body + 41 × 47 carrier
+  extension peninsula at +D), no projecting W216 tab. W216 sits at the
+  south‑west corner of the main body and mates **top‑down** through a
+  chassis window above it.
+- **X50 / X75 H positions are preserved from the original A21**
+  (H = 35 and H = 98 respectively) and the SMB right‑angle exit
+  directions are matched to the original W212 / W213 cable run, so
+  the existing harness reaches without rework.
+- **Compartment 2 no longer "contains" a stacked Rogers** — Rogers
+  sits laterally on the carrier extension, outside the FR‑4 main
+  shield‑can footprint. The two **Laird BMI‑S‑205‑F** two‑piece SMD
+  shield cans on the main body cover only the LO chain (C1) and the
+  IF chain (C2); Rogers gets its own shielding strategy at the
+  chassis level (see Open Items). Milled aluminum lids over a gasket
+  pattern are held as plan B if the SMD cans prove insufficient.
+
+## Mapping to legacy schematic blocks (drawing 1035.8840.01, band‑3 p.156)
+
+The legacy A21 partitions the casing‑internal microwave kernel into
+four labelled sub‑assemblies (A211 daughter PCB + A212 mixer/comb/IF
+block + A213 LPF + A214 pre‑mixer RF amp). The modern design folds
+several of these into integrated parts; the mapping is:
+
+| Legacy block (p.156) | Role in legacy A21 | Modern equivalent | Notes |
+|---|---|---|---|
+| **A214** AMPLIFIER (with input + output attenuators) on the X211 RF path; biased by X213 / VG ← X95 (−0.5 V) and X212 / VD ← X96 (+6.3 V) | Broadband RF pre‑amp between X211 (2–20 GHz from A20) and the sampling‑mixer RF port | MADL‑011022 limiter → AVA‑223MP+ buffer (14 dB, 43 dB rev iso) → Pad3 cascade on the Rogers daughter | Bias levels are not preserved — AVA runs at VGG1 ≈ −0.8 V / VDD = +10 V. The two casing bias feeds (X95 / X96) disappear as external nets; their modern analogues are local to the daughter (V_GG1 + V_DD on the BTB pinout). |
+| **A213** LPF on the RF path between A214 output and the sampling‑mixer RF port | Cleans pre‑amp harmonics before the mixer | *(no explicit equivalent)* | Dropped — AVA‑223MP+ output drives MSPD2018 RF port directly through Pad3 only. A20's YIG output at X211 is already band‑limited and AVA is broadband‑flat, so this is expected to be benign; if MSPD spurs land high in the IF on Build 2, the missing pre‑RF LPF is one of the suspects. |
+| **A212** sampling‑mixer block: passive Schottky bridge (RF/LO/IF ports) + comb generator (driven by X216 ← X21 = the +30 dBm 230 MHz LO drive into the casing) + IF amplifier biased by X214 / VA15‑IF ← X72 (+15 V) | Sampling pulse generation, RF×LO sampling mixing, and IF post‑amplification | **MSPD2018‑E50** integrated Sampling Phase Detector (RF + LO + IF in one packaged hybrid; sampling pulse generated internally from the +19 dBm LO at the BTB.LO pin) **+** AG302‑86G IF LNA on the FR‑4 main C2 cavity (downstream of LFCN‑105+ + 2‑stage notch) | LO drive level is rebudgeted +30 dBm → +19 dBm to centre on MSPD's +17…+23 dBm window — the legacy comb gen needed a hard kick to make a usable 2–20 GHz comb; MSPD has its own SRD/sampling‑pulse generator and is spec'd for lower drive. The X72 / VA15‑IF feed disappears (AG302 lives on the FR‑4 main with its own +5 V LDO3). |
+| **A211** LO chain — per recovered schematic ([rs_smp_corpus/volumes/band-3/figures/A211_var02_schematic_sheet_02_02.jpg](rs_smp_corpus/volumes/band-3/figures/A211_var02_schematic_sheet_02_02.jpg), 2026‑04‑30): X50 → input divider → **V50 + V60 (AT‑42085‑B NPN Si bipolar cascade, "420" top mark)** → **V61 + V62 (HSMS‑2800‑B Schottky pair = "A0" SOT‑23)** doubler → output match → **V2 (BFG97‑B)** LO pre‑driver → **V3 (MRF3866‑B) + V4 (MRF5160‑B) class‑AB push‑pull power output** (bias network per schematic: **L41 / L43 470 nH are base‑bias RFCs** in series with R43 / R44 100 Ω from each ±15 V rail to the V3 / V4 base nodes; **R40 / R41 3R92 emitter resistors tie the V3 / V4 emitter pours directly to ∓15 V** with no choke in series; collectors are tied together and feed **L45 54 nH + C49 10 P** as the output match) → X21 LO drive into the casing. *(Bias‑network detail corrected 2026‑04‑30 per the §7D DEEPER SCHEMATIC RE‑READ banner in [smp_hw_diag.md](smp_hw_diag.md); the earlier "doubled collectors driven through L41 / L43 chokes to opposite ±15 V rails / 100 Ω summing" framing in this row is **withdrawn** — the push‑pull / class‑AB verdict itself is unchanged.) (The original "step‑recovery V4" framing in earlier revisions of this document was incorrect — V4 is the PNP push‑pull half, not an SRD; the SRD comb generation happens inside the milled casing on A212, not on A211.) | Generate +26…+30 dBm comb‑gen drive at 206–234 MHz from the X50 input | C1 cavity on FR‑4 main: Pad1 → JMS‑1H+ doubler → BFCN‑212+ BPF → 2× PGA‑103+ → Pad2 (+19 dBm at BTB.LO) | Functional equivalent in modern parts; legacy uses a discrete NPN bipolar + Schottky‑pair doubler (V50/V60/V61/V62) followed by a class‑AB push‑pull RF power output, the modern design folds doubling into JMS‑1H+ and uses two stages of PGA‑103+ for output drive. Output level reduced to MSPD spec window. |
+| **A211** IF back‑end (impedance transformer / matching between X70 and X75) | Passive matching from in‑casing IF amp output (X70) to A10 input (X75) | C2 cavity on FR‑4 main: LFCN‑105+ LPF → 2‑stage series‑LC notch (212 / 232 MHz) → AG302‑86G LNA → X75 | Modern path adds active gain (the legacy in‑casing IF amp's +27 dB is replaced by AG302's +15.6 dB on the main board) plus an LO‑band notch that compensates for MSPD's wider IF‑port LO leakage vs the legacy Schottky bridge. |
+| **A211** §7.1.7 bias‑control crowbar (N80A–D quad comparator + V85/V89 cut‑off transistors + V90/V95/R98/N90 drain‑current set) | Window‑monitor each controlled supply rail; shut MMIC drains off on rail fault | TPS3808G01 (rail reset) + TLV9004 quad window comparator + BSS308PE drain‑kill PFET (wired‑OR DRAIN_KILL bus) | Functional equivalent (window comparators on each protected rail → wired‑OR drain kill). Modern design adds a VGG1 summer (catches gate‑bias open‑resistor failures the legacy crowbar would miss). **N.F. on Var.02 (per recovered schematic 2026‑04‑30):** the LP365M (N80‑E), the input‑divider ladder R80–R85, and the ISET R109 are all marked N.F. on the Var.02 schematic — the legacy crowbar is therefore **not present** on the bench unit, and the modern supervisor implements a function the legacy hardware on this variant didn't have. The N90 / V90 / V95 / R98 drain‑current‑set chain is independent of LP365M and remains the bench‑observed bias loop (see [smp_hw_diag.md](smp_hw_diag.md) §7D DEEPER SCHEMATIC RE‑READ banner item 3 + §7C Side‑B bias chain probe). |
+| **VARSAMP** W216.9 — passive divider on a supply rail (per A26 §7.1.5 module‑ID convention) | Identify "Sampling Module installed" to A26 (window 0.5…1.5 V) | 2.80 kΩ / 432 Ω 0.1 % thin‑film divider directly off VA7.5‑P (W216.4) | Same topology, tightened tolerances; no internal LDO between W216 and the divider. |
+| **DIAGSAMP** W216.10 — *Diagnose‑Gleichrichter des Sampling‑Moduls* (analog 7.5…11 V LO/sampling‑pulse witness reported through A26 multiplexer D62‑A) | Telemetry of LO health to A26 | Cap pickoff after U2b → BAT54S doubler → RC → OPA2180 buffer → PDZ12 clamp → W216.10 | **Bench‑traced legacy topology, only partially confirmed by the recovered schematic** ([rs_smp_corpus/volumes/band-3/figures/A211_var02_schematic_sheet_02_02.jpg](rs_smp_corpus/volumes/band-3/figures/A211_var02_schematic_sheet_02_02.jpg)) — bench tracing on A211 Side B sees **cap pickoff from the on‑PCB LO line near X21 → SOT‑23 HSMS‑2800‑B Schottky envelope rectifier ("A0", anode on the X21 RF tap, cathode hard to GND) → 10 kΩ + RC filter → W216.10**, but on the visible portion of the Var.02 sheet 02/02 the W216 connector enumerates pins 1–9 only (no W216.10), the only HSMS‑2800s drawn are V61 / V62 inside the FREQUENCY DOUBLER block, and the X21 output line exits the right edge of the JPEG (column‑9 strip apparently cropped off the image). The DIAGSAMP rectifier therefore most likely lives on the off‑image right‑margin strip; the bench identification is **provisional** pending a higher‑resolution scan (see [smp_hw_diag.md](smp_hw_diag.md) §7D DEEPER SCHEMATIC RE‑READ banner item 2). The "R4D‑A buffer / R4D‑B error‑integrator" framing in earlier revisions of this document is **withdrawn 2026‑04‑30**: the two SOIC‑8 parts adjacent to X21 are V3 = MRF3866 and V4 = MRF5160 RF transistors (the LO push‑pull power output, not op‑amps in the DIAGSAMP path); the catastrophic‑failure narrative for the R4D pair is also withdrawn (see [smp_hw_diag.md](smp_hw_diag.md) §7D D.3 SUPERSEDED banner). X72 remains the +15 V analog supply to the in‑casing A212 IF amp, **not** a witness tap. The modern detector adds an active buffer + clamp on the rectified envelope; the legacy passive‑only topology is unchanged in spirit. |
+
+External envelope (X211, X50, X75, W216 1–9) is preserved 1:1 — see
+*Interfaces preserved* table above. The casing‑internal cross‑connectors
+(X21, X70, X72, X95, X96) all disappear — they were the bias and
+RF/IF feeds across the milled‑case boundary, and the modernized module
+collapses that boundary into a single FR‑4 + Rogers PCB stack.
 
 ## Block diagram
 
-Subgraphs `C1` and `C2` are the two RF shield compartments on the FR‑4
-main board; subgraph `D` (nested inside `C2`) is the Rogers RO4350B
-daughter card. `J1'` / `J2'` are the LO and IF SMP board‑to‑board
-bullets crossing from main to daughter.
+Subgraphs `C1` and `C2` are the two RF shield compartments
+(Laird BMI‑S‑205‑F) on the FR‑4 main body; subgraph `D` is the
+Rogers RO4350B daughter card sitting on the FR‑4 carrier extension
+peninsula east of both cans (see *Architecture decision (2026‑04‑26):
+lateral carrier topology*). `BTB.LO` and `BTB.IF` are the two RF
+lanes on the 20‑pin Samtec ERM8/ERF8 vertical‑mate connector
+crossing between the FR‑4 main and the Rogers daughter.
 
 ```mermaid
 flowchart LR
@@ -73,29 +355,30 @@ flowchart LR
         U2b -- "206–234 MHz<br/>+22 dBm" --> Pad2
     end
 
-    subgraph C2 ["C2 — RF/IF compartment (FR-4 main)"]
+    subgraph C2 ["C2 — IF chain (FR-4 main)"]
         direction LR
-        subgraph D ["Rogers RO4350B daughter"]
-            direction LR
-            LIM["Limiter<br/>MADL-011022"]
-            AVA["AVA-223MP+<br/>0.1 MHz–22 GHz<br/>gain 14 dB<br/>RevIso 43 dB"]
-            Pad3["13 dB pad<br/>Kyocera + Ohmite"]
-            MSPD["MSPD2018-E50<br/>Sampling Phase Detector"]
-            LIM -- "2–20 GHz<br/>0…+6 dBm" --> AVA
-            AVA -- "2–20 GHz<br/>+14…+20 dBm" --> Pad3
-            Pad3 -- "2–20 GHz<br/>+1…+7 dBm<br/>(RF into MSPD)" --> MSPD
-        end
         LPF["LPF LFCN-105+<br/>fc ≈ 90 MHz"]
         Notch["2-stage series-LC notch<br/>f₀₁ ≈ 212, f₀₂ ≈ 232 MHz<br/>≥ 35 dB across LO band"]
         LNA["AG302-86G LNA<br/>+15.6 dB"]
-        MSPD -- "IF pin · J2' SMP bullet<br/>10–80 MHz<br/>−19…−15 dBm<br/>(CL 18–22 dB)" --> LPF
         LPF -- "10–80 MHz<br/>≈ −19.5 dBm worst" --> Notch
         Notch -- "10–80 MHz<br/>≈ −19.7 dBm worst" --> LNA
     end
 
+    subgraph D ["Rogers RO4350B daughter (carrier extension)"]
+        direction LR
+        LIM["Limiter<br/>MADL-011022"]
+        AVA["AVA-223MP+<br/>0.1 MHz–22 GHz<br/>gain 14 dB<br/>RevIso 43 dB"]
+        Pad3["13 dB pad<br/>Kyocera + Ohmite"]
+        MSPD["MSPD2018-E50<br/>Sampling Phase Detector"]
+        LIM -- "2–20 GHz<br/>0…+6 dBm" --> AVA
+        AVA -- "2–20 GHz<br/>+14…+20 dBm" --> Pad3
+        Pad3 -- "2–20 GHz<br/>+1…+7 dBm<br/>(RF into MSPD)" --> MSPD
+    end
+
     X50 -- "103–117 MHz<br/>+5 dBm" --> Pad1
-    Pad2 -- "J1' SMP bullet<br/>206–234 MHz<br/>+19 dBm (LO into MSPD)" --> MSPD
-    X211 -- "2–20 GHz<br/>0…+7 dBm" --> LIM
+    Pad2 -- "BTB.LO (Samtec ERM8/ERF8 pin)<br/>206–234 MHz<br/>+19 dBm (LO into MSPD)" --> MSPD
+    MSPD -- "BTB.IF (Samtec ERM8/ERF8 pin)<br/>10–80 MHz<br/>−19…−15 dBm<br/>(CL 18–22 dB)" --> LPF
+    X211 -- "2–20 GHz<br/>0…+7 dBm<br/>(edge-launch on Rogers east edge)" --> LIM
     LNA -- "10–80 MHz<br/>−4…0 dBm<br/>(inside A10's 0 ± 5 dBm)" --> X75
 ```
 
@@ -238,12 +521,34 @@ generated correctly"*). A26 reads it through multiplexer D62‑A at MUX address
 0b010 with MUXEN1 = 1. 7.5…11 V means the LO / sampling‑pulse chain is
 healthy; anything outside this window is reported as a module fault.
 
-The manual closes the external requirement and the fault semantics, but not
-the exact original internal witness node. Recent bench / photo work suggests
-the legacy module may route this function internally via the undocumented X72
-interconnect. The redesign therefore targets functional equivalence at
-W216.10, not a claim that the original rectifier sampled exactly the same
-internal point.
+Recovered schematic
+([rs_smp_corpus/volumes/band-3/figures/A211_var02_schematic_sheet_02_02.jpg](rs_smp_corpus/volumes/band-3/figures/A211_var02_schematic_sheet_02_02.jpg),
+2026‑04‑30) plus bench tracing
+([smp_hw_diag.md §7D](smp_hw_diag.md) "X21 LO ALC sanity check" +
+[§7G](smp_hw_diag.md) "Loop architecture") locate the original internal
+witness node **on‑PCB on A211 Side B**, not at the in‑casing X72 tap.
+The bench‑traced legacy chain is **cap pickoff from the on‑PCB LO line
+near X21 → SOT‑23 HSMS‑2800‑B Schottky envelope rectifier ("A0") →
+10 kΩ + RC filter → W216.10** — a passive‑only path with no buffer or
+integrator op‑amps. *(Caveat 2026‑04‑30: this rectifier is **bench‑
+traced only** — on the visible portion of the Var.02 sheet 02/02 the
+W216 connector enumerates pins 1–9 (no W216.10), the only HSMS‑2800s
+drawn are V61 / V62 inside the FREQUENCY DOUBLER block, and the X21
+LO line exits the right edge of the JPEG. The DIAGSAMP rectifier
+itself almost certainly lives on the off‑image column‑9 right strip
+of the sheet; the bench rectifier identification is provisional
+pending a higher‑res scan, see [smp_hw_diag.md](smp_hw_diag.md) §7D
+DEEPER SCHEMATIC RE‑READ banner item 2.)*
+The earlier "R4D‑A buffer + R4D‑B error/integrator" framing in this
+document is **withdrawn 2026‑04‑30**: the two SOIC‑8 parts adjacent to X21
+are V3 = MRF3866 and V4 = MRF5160 RF transistors that form the LO
+class‑AB push‑pull power output (driving X21), not DIAGSAMP buffer/
+integrator op‑amps. X72 is the +15 V analog supply (VA15‑IF) feeding the
+in‑casing A212 IF amp — not a sense tap. The modernized topology below
+(cap pickoff after U2b → BAT54S doubler → RC → OPA2180 buffer → clamp →
+W216.10) is **functionally equivalent** to the legacy passive detector,
+adding active gain so the rectified envelope reaches the 7.5…11 V A26
+window without depending on the post‑rectifier loading impedance.
 
 Topology — capacitive pickoff on the LO line after U2b (before Pad2), Schottky
 voltage doubler, RC smoothing, and a buffered gain stage on the +15 V rail:
@@ -299,6 +604,32 @@ tap for Build 2 diagnostics.
 | LO frequency off (A7 fault) | Level may stay in range, freq wrong | DIAGSAMP may stay in window — A26's YIG‑PLL lock detection catches this, not DIAGSAMP (consistent with the original fault partition) |
 | Detector diode open | — | DIAGSAMP stuck at 0 V (fault) |
 | Detector diode shorted | doubler output → V_pk of LO directly | DIAGSAMP may saturate high → Zener clamps at 12 V → A26 reads 12 V (outside 7.5–11 V window on the high side, fault) |
+
+**OPA2180 +15 V supply‑side protection** — kept as defensive practice
+even though the original motivating failure mode is now withdrawn. The
+earlier analysis attributed an "internal V+↔V− short on the R4D
+op‑amps + fused per‑chip supply filter" failure on the bench unit to
+the legacy DIAGSAMP buffer chain; recovered schematic 2026‑04‑30 shows
+those two SOIC‑8 parts are V3 = MRF3866 / V4 = MRF5160 RF transistors
+(the LO push‑pull power output stage), not DIAGSAMP buffer op‑amps,
+and the bench DC readings reflect the expected DC paths through the
+choke + 100 Ω + 3R92 network (see [smp_hw_diag.md §7D D.3 SUPERSEDED
+banner](smp_hw_diag.md)). The 22 Ω series‑R + bypass cap structure is
+nevertheless retained as low‑cost protection for the OPA2180 buffer:
+it adds defense‑in‑depth against any future op‑amp failure that might
+otherwise propagate up to W216.1 / A26. Implementation is a **22 Ω
+0805 thin‑film series R + 100 nF X7R bypass to GND** on the OPA2180
++15 V pin (V+ = pin 8 on the SOIC‑8), local to the part. OPA2180 quiescent draw
+is ≤ 1.4 mA → 31 mV drop across 22 Ω, negligible vs the +15 V headroom (the
+buffer output swings 0–12 V max). Under a V+↔V− short the resistor passes
+~1.4 A initial, dissipates ~43 W, and opens within a few ms — same survival
+mode as the legacy filter, sized so OPA2180's local +15 V leg fails open
+before A26's W216.1 supply distribution sees the fault. No equivalent
+filter is needed on V− (pin 4 to GND): OPA2180 is single‑supply‑capable and
+pin 4 ties straight to local GND, so a die V+↔V− short blows itself out
+through the +15 V leg only. **BOM impact**: +1× 22 Ω 0805 thin‑film
+(precision kit stock) + the existing 100 nF X7R 0603 bypass already counted
+in the supervisor / DIAGSAMP bias section — no new external buy.
 
 ### VARSAMP generator
 
@@ -356,7 +687,7 @@ than any tolerance source in the divider.
 | After U2a (PGA‑103+ #1, 22 dB gain) | +10 dBm | linear, small‑signal |
 | After inter‑stage pad (Pad_IS) | +7 dBm | 0805 T‑pad, 3 dB, VSWR stabilizer |
 | After U2b (PGA‑103+ #2) | +22 dBm | ~7 dB into compression → flat P1dB +22.5 dBm |
-| After output pad (Pad2) | **+19 dBm into MSPD LO** (at J1' bullet) | centred in +17…+23 dBm |
+| After output pad (Pad2) | **+19 dBm into MSPD LO** (at BTB.LO pin) | centred in +17…+23 dBm |
 | X211 in | +3 dBm @ f_RF | A20 |
 | After PIN limiter | +2 dBm | MADL‑011022 |
 | After AVA‑223MP+ (14 dB gain) | +16 dBm | |
@@ -417,7 +748,7 @@ flowchart LR
     PadIS["Pad_IS<br/>−3 dB T-pad<br/>+10 → +7 dBm"]
     U2b["U2b PGA-103+<br/>stage 2 saturated<br/>+7 → +22 dBm"]
     Pad2["Pad2<br/>−3 dB T-pad<br/>+22 → +19 dBm"]
-    J1(["J1'<br/>SMP bullet → daughter<br/>206–234 MHz<br/>+19 dBm LO into MSPD"])
+    J1(["BTB.LO pin<br/>Samtec ERM8/ERF8 → daughter<br/>206–234 MHz<br/>+19 dBm LO into MSPD"])
 
     X50 -- "Cdc<br/>103–117 MHz" --> Pad1
     Pad1 -- "Cdc<br/>103–117 MHz" --> U1
@@ -475,8 +806,8 @@ decoupling spectrum from > 1 GHz down to low‑MHz bulk.
   - **10–100 MHz** (the PGA‑103+ LF instability band): |Z| rises smoothly from ~155 Ω at 10 MHz through ~246 Ω at 50 MHz to ~400 Ω at 100 MHz. Shunt loading stays low enough that the combined port impedance keeps |S₁₁·S₂₂| < 0.9 and `k > 1` across the full LF band per AN60‑064 Fig. 4.
   - **206–234 MHz passband**: |Z| ≥ 815 Ω → passband loss ≤ 0.3 dB (ratio of shunt |Z| to 50 Ω source).
   Component choice justification: 620 nH is the smallest value that keeps |Z| ≥ 800 Ω across the passband; 150 Ω is chosen so the LF plateau is `≥ 3×` the PGA's ~50 Ω input resistance, giving enough shunt loss to kill the instability without dominating passband return loss. Lower L would move `f_c` into the passband (eats gain); higher L would leave the 30–100 MHz gain peak undamped.
-- **Inter‑stage pad** (Pad_IS, discrete 0805 3 dB T‑pad) stabilizes the U2a→U2b interface VSWR and drops the inter‑stage level by 3 dB so U2b enters compression predictably: +7 dBm drive into +22.5 dBm P1dB = ~7 dB overdrive, i.e. the saturated‑output regime where Pout is decoupled from input‑level variation (this is what delivers the ±0.5 dB flatness target across 206–234 MHz and across AGC state on X50).
-- **Output pad** (Pad2, discrete 0805 3 dB T‑pad) trims the cascade from ~+22 dBm to the +19 dBm MSPD target and absorbs any residual mismatch at the J1' SMP bullet transition.
+- **Inter‑stage pad** (Pad_IS, discrete 0805 3 dB T‑pad) stabilizes the U2a→U2b interface VSWR and drops the inter‑stage level by 3 dB so U2b enters compression predictably: +7 dBm drive into +22.5 dBm P1dB = ~7 dB overdrive, i.e. the saturated‑output regime where Pout is decoupled from input‑level variation (this is what delivers the ±0.5 dB flatness target across 206–234 MHz and across AGC state on X50). **Open‑loop level control matches the legacy A21 architecture**: bench tracing of the original ([smp_hw_diag.md §7G](smp_hw_diag.md), readings T1) finds no closed‑loop ALC on the on‑PCB LO chain — X21 is held inside its 4 dB +26…+30 dBm window by a precision DC bias regulator on the cascade‑amp gates plus the FET cascade's natural saturation behaviour, with no LO‑envelope feedback path. The modernized chain replaces both mechanisms with the saturated PGA‑103+ stage 2 alone, landing inside MSPD's wider +17…+23 dBm window without an active level loop.
+- **Output pad** (Pad2, discrete 0805 3 dB T‑pad) trims the cascade from ~+22 dBm to the +19 dBm MSPD target and absorbs any residual mismatch at the BTB.LO pin transition (Samtec ERM8/ERF8 lane to the Rogers daughter).
 - **T‑pad resistor spec** (applies to Pad1, Pad_IS, Pad2, and any IF‑chain discrete T‑pad — GALI‑52+ adapter post‑LNA pad, optional notch→AG302 IF trim footprint). All LO and IF T‑pad positions share one 0805 thin‑film footprint for single‑SKU BOM uniformity; 0805 is forced by Pad2's 38 mW worst‑element dissipation (0603 at 100 mW fails the 3× derate rule there) and carried across the lower‑power positions to collapse the resistor SKU count to two (8.66 Ω and 143 Ω, both 0805):
   - **Topology** — 50 Ω symmetric T, R_ser = **8.66 Ω** (×2, E96, 1.3 % off ideal 8.55 Ω), R_shunt = **143 Ω** (E96, 0.8 % off ideal 141.9 Ω). Ideal attenuation 3.01 dB with perfect R; 1 % resistor tolerance translates to ≤ 0.1 dB attenuation error and ≥ 23 dB return loss at 234 MHz on an 0805 body (~0.6 nH end‑cap inductance vs ~0.4 nH on 0603 trades ~3 dB of return‑loss headroom; still well above the 20 dB target, and the PGA‑103+ port VSWR dominates the chain budget regardless).
   - **Technology — thin‑film mandatory, thick‑film not acceptable.** Three reasons: (a) TCR ≤ 50 ppm/°C holds attenuation flat over −40…+85 °C (thick‑film 100–250 ppm/°C drifts > 0.05 dB over the same span); (b) parasitic series inductance < 0.5 nH per resistor (thick‑film laser‑trimmed serpentines run 1–2 nH, enough to visibly tilt return loss near 234 MHz); (c) low‑ohm thick‑film values (< 10 Ω) are produced with metal‑foil jumpers that have poor HF behavior — the 8.66 Ω series arms are particularly exposed.
@@ -493,7 +824,7 @@ decoupling spectrum from > 1 GHz down to low‑MHz bulk.
     | **Susumu RG2012** *(alt)* | 0.1 % | 10 ppm/°C | Characterized to 2 GHz; premium option if attenuation‑over‑temp turns out to be the constraint on Phase B measurements. |
 
     Bench trim kit: stock a handful of 6.98 Ω / 7.50 Ω / 8.06 Ω / 9.31 Ω / 10.0 Ω series values and 121 Ω / 133 Ω / 154 Ω / 165 Ω shunt values in the same 0805 product line to build 2 / 2.5 / 3.5 / 4 dB T‑pads for swap‑tuning any LO or IF T‑pad without a BOM revision.
-- **Why no post‑U2b harmonic filter**: U2b in saturation produces 2f₀ at ~−20 dBc and 3f₀ at ~−25 dBc (PGA‑103+ typ under 7 dB overdrive). These are phase‑coherent with the fundamental and therefore add coherently to the SRD‑generated comb lines inside the MSPD at the same frequencies, which dominate (SRD 2nd‑comb line is typically only −6 to −10 dBc of fundamental). Total LO‑port power increase ≤ 0.1 dB — PREF stays well inside the +17…+23 dBm window — and no new IF spurs are created because the MSPD mixing is against the SRD comb, not against external LO harmonics. A filter here would add insertion loss and VSWR ripple for no measurable spur‑budget benefit. Verify at Build 2 with a spectrum sweep at the J1' bullet: 2f₀ ≤ −15 dBc and 3f₀ ≤ −20 dBc are acceptance thresholds.
+- **Why no post‑U2b harmonic filter**: U2b in saturation produces 2f₀ at ~−20 dBc and 3f₀ at ~−25 dBc (PGA‑103+ typ under 7 dB overdrive). These are phase‑coherent with the fundamental and therefore add coherently to the SRD‑generated comb lines inside the MSPD at the same frequencies, which dominate (SRD 2nd‑comb line is typically only −6 to −10 dBc of fundamental). Total LO‑port power increase ≤ 0.1 dB — PREF stays well inside the +17…+23 dBm window — and no new IF spurs are created because the MSPD mixing is against the SRD comb, not against external LO harmonics. A filter here would add insertion loss and VSWR ripple for no measurable spur‑budget benefit. Verify at Build 2 with a spectrum sweep at the **U.FL LO test pad in the routing gap between C1 and C2** (D ≈ 40, H ≈ 60..73): 2f₀ ≤ −15 dBc and 3f₀ ≤ −20 dBc are acceptance thresholds.
 - **DC blocks**: every `[Cdc]` is a 1 nF 0402 NP0 (**Murata GRM1555C1H102JA01D**, ±5 % J, 50 V, from stock); SRF ~1 GHz, |Z| < 1 Ω across 206–234 MHz. Present on both RF pins of each PGA‑103+ so the pin‑3 +5 V never reaches the next filter / pad / connector.
 - **Ground return**: each of the 100 pF, 1 nF, and Cdc caps gets a dedicated via to the inner GND plane adjacent to the cap pad, not shared with the other ladder stages (shared return inductance collapses the decoupling at the pin).
 
@@ -522,9 +853,9 @@ decoupling spectrum from > 1 GHz down to low‑MHz bulk.
 
 | Ref | Part | Role | Cost | Source |
 |---|---|---|---|---|
-| LDO1 | ADI **LT3045** *(external buy)* | +10 V low‑noise LDO for AVA‑223MP+ drain (C2) | ~$7 | [DigiKey](https://www.digikey.com/en/products/result?keywords=LT3045) · [Mouser](https://www.mouser.com/c/?q=LT3045) |
+| LDO1 | ADI **LT3045** *(external buy)* | +10 V low‑noise LDO for AVA‑223MP+ drain (C2). Stays **on‑module** — the ≥ 31 mm W budget (see *Mechanical envelope (measured)*) absorbs its 1.5 W dropout (15 → 10 V × 300 mA) on a copper pour + via field on the FR‑4 main, no chassis‑floor relocation needed. | ~$7 | [DigiKey](https://www.digikey.com/en/products/result?keywords=LT3045) · [Mouser](https://www.mouser.com/c/?q=LT3045) |
 | LDO2 | ADI **LT3045** *(external buy)* | +5.2 V LDO for 2× PGA‑103+ drain (C1 LO chain), fed from W216.4 +7.5 V tap; I_lim programmed to 250 mA; direct bias (no Rbias ballast) | ~$7 | [DigiKey](https://www.digikey.com/en/products/result?keywords=LT3045) · [Mouser](https://www.mouser.com/c/?q=LT3045) |
-| FB_LDO2 *(DNP footprint)* | TDK **MPZ2012S221A** 0805 (same part as AVA / AG302 beads — single BOM line) — 220 Ω @ 100 MHz, Irms 3 A, DCR 40 mΩ | **Optional pi‑filter bead** on the LDO2 input, between the NFE61PT102E1H9L C1 feedthrough (+7.5 V harness side) and the LT3045 #2 VIN pin. **Footprint only — DNP in baseline BOM**, shorted by a 0 Ω 0805 jumper. **Install trigger (Build 2):** with the LO chain bringing up, measure the LT3045 #2 output on a spectrum analyser through a DC block. If rail content at 234 MHz or its harmonics (468 / 702 MHz) exceeds **−70 dBc** relative to the +19 dBm LO drive at J1', swap the 0 Ω for the bead and re‑sweep. Rationale for DNP baseline: the NFE61PT feedthrough (≥ 20 dB at 200 MHz) plus LT3045 PSRR (≥ 60 dB below 1 MHz, ≥ 30 dB typ at 200 MHz) is expected to leave < −80 dBc in the first build; the bead is belt‑and‑suspenders insurance, not a known requirement. Vd budget if installed: FB drop 40 mΩ × 240 mA = 10 mV reduces LT3045 dropout headroom from 2.3 V to 2.29 V — still > 7× the 300 mV dropout spec. | stock (kit) / 0 Ω jumper baseline | [TDK MPZ2012S221A](https://product.tdk.com/en/search/emc/emc/bead/info?part_no=MPZ2012S221A) |
+| FB_LDO2 *(DNP footprint)* | TDK **MPZ2012S221A** 0805 (same part as AVA / AG302 beads — single BOM line) — 220 Ω @ 100 MHz, Irms 3 A, DCR 40 mΩ | **Optional pi‑filter bead** on the LDO2 input, between the NFE61PT102E1H9L C1 feedthrough (+7.5 V harness side) and the LT3045 #2 VIN pin. **Footprint only — DNP in baseline BOM**, shorted by a 0 Ω 0805 jumper. **Install trigger (Build 2):** with the LO chain bringing up, measure the LT3045 #2 output on a spectrum analyser through a DC block. If rail content at 234 MHz or its harmonics (468 / 702 MHz) exceeds **−70 dBc** relative to the +19 dBm LO drive at the U.FL LO test pad, swap the 0 Ω for the bead and re‑sweep. Rationale for DNP baseline: the NFE61PT feedthrough (≥ 20 dB at 200 MHz) plus LT3045 PSRR (≥ 60 dB below 1 MHz, ≥ 30 dB typ at 200 MHz) is expected to leave < −80 dBc in the first build; the bead is belt‑and‑suspenders insurance, not a known requirement. Vd budget if installed: FB drop 40 mΩ × 240 mA = 10 mV reduces LT3045 dropout headroom from 2.3 V to 2.29 V — still > 7× the 300 mV dropout spec. | stock (kit) / 0 Ω jumper baseline | [TDK MPZ2012S221A](https://product.tdk.com/en/search/emc/emc/bead/info?part_no=MPZ2012S221A) |
 | LDO3 | TI **TPS7A4700** *(external buy)* | +5 V ultra‑low‑noise LDO for AG302‑86G IF LNA (C2); 35 mA typ draw (headroom for 65–80 mA fallback to GALI‑52+/84+ via adapter PCB without changing the LDO) | ~$8 | [DigiKey](https://www.digikey.com/en/products/result?keywords=TPS7A4700) · [Mouser](https://www.mouser.com/c/?q=TPS7A4700) |
 | SUP | TI **TPS3808G01DBVR** *(external buy)* | Adjustable supervisor / reset (rail protection only; not telemetry) | ~$2 | [DigiKey](https://www.digikey.com/en/products/result?keywords=TPS3808G01DBVR) · [Mouser](https://www.mouser.com/c/?q=TPS3808G01DBVR) |
 | WIN | TI **TLV9004IDR** *(external buy)* | Quad RRIO op‑amp on +5.2 V (1.8–5.5 V family, 60 µA/ch), SOIC‑14. All four channels feed the DRAIN_KILL wired‑OR bus. **A**: +10 V upper trip (VDD scaled ÷ 2.2). **B**: +5.2 V lower trip (rail ÷ 1.1). **C**: VGG1 upper trip (V_sum > +1.4 V, i.e. V_GG1 > ≈ −0.2 V — catches R1 open). **D**: VGG1 lower trip (V_sum < +0.5 V, i.e. V_GG1 < ≈ −2.2 V — catches R_bleed open / BZX84C2V4 clamp, −15 V rail sag). | ~$1.00 | [DigiKey](https://www.digikey.com/en/products/result?keywords=TLV9004IDR) · [Mouser](https://www.mouser.com/c/?q=TLV9004IDR) |
@@ -539,6 +870,15 @@ decoupling spectrum from > 1 GHz down to low‑MHz bulk.
 
 ### Connectors, substrate, shielding
 
+> Superseded 2026-04-30 — full "Connectors, substrate, shielding"
+> banner moved to
+> [`smp_history.md#H-2026-04-26-connectors-substrate-shielding-banner`](smp_history.md#h-2026-04-26-connectors-substrate-shielding-banner).
+> Current verdict: board-to-board interconnect is **1× Samtec ERM8/ERF8
+> 20-pin vertical-mate BTB + 4× M2 brass standoffs (L = 7 mm)**; shielding
+> is **Laird BMI-S-205-F + BMI-S-205-C** two-piece SMD cans. X211 / X50 /
+> X75 / W216 / substrate rows below remain current; historical SMP / FTS-CLM
+> rows are retained below for context only — do not source against them.
+
 Five connector / material decisions land in this section:
 
 - **X211 bench connector** — carries 2–20 GHz, locked to **3.5 mm
@@ -551,41 +891,54 @@ Five connector / material decisions land in this section:
   bandwidth or cost reason to change. The original X21 chassis LO
   test point (206–234 MHz) is dropped entirely — the modernized
   module is "no factory cal required", and bring‑up / debug LO
-  measurements use the J1' SMP board‑to‑board bullet‑pull inside
-  the module instead (same information path, no extra chassis
-  connector, no insertion loss on the main LO trace).
+  measurements use the **U.FL test pad in the routing gap between
+  C1 and C2** (D ≈ 40, H ≈ 60..73) instead of an external chassis
+  connector (same information path, no insertion loss on the main
+  LO trace).
 - **Substrate split** — Rogers RO4350B 0.51 mm 2‑layer for the ~25 × 40 mm
   RF core daughter (limiter → AVA‑223MP+ → pad → MSPD2018), FR‑4 4‑layer
   1.6 mm for the main board (LO chain, IF chain, LDOs, supervisor, all
   four bench connectors). Motivation is in "Board split rationale"
   below.
-- **Board‑to‑board interconnect** — LO (206–234 MHz) and IF (10–16 MHz)
-  cross between daughter and main on 2× **Amphenol SMP‑FS2A‑645**
-  smooth‑bore bullets between SMP‑MSSB class PCB jacks on each board;
-  **5–6 mm** standoff height; ±0.5 mm radial / ±0.25 mm axial
-  self‑alignment; 20 GHz rated (bandwidth unused on these signals
-  but the blind‑mate geometry is proven and the same jack family is
-  used at 20 GHz on the daughter RF‑probe test point). Interconnect
-  BOM ~$36 / module. MMCX was considered as a cheaper semi‑blind‑mate
-  alternative and rejected — see *Alternatives considered*. DC / bias /
-  telemetry crosses on a single **2×3 1.27 mm Samtec header pair**;
-  mechanical fix is **4× M2.5 brass standoffs** sized to the SMP stack.
-- **Shielding** — 2× Harwin S02 tin‑plate cans on the main board,
-  laying out one or two RF compartments; trade‑off in "Compartment
-  strategy" below.
+- **Board‑to‑board interconnect** — *[Superseded by Architecture
+  decision (2026‑04‑26): lateral carrier topology. Replaced by 1×
+  Samtec ERM8/ERF8 20‑pin vertical‑mate BTB (header
+  `ERM8-010-02.0-L-DV-TR` on FR‑4 carrier extension, socket
+  `ERF8-010-05.0-S-DV-TR` on Rogers underside; 7 mm mated stack)
+  carrying LO + IF + DC + GND on a single connector with the
+  GND‑fenced pinout shown in the architecture decision section.
+  Original SMP‑bullet text retained below for history.]*
+  LO (206–234 MHz) and IF (10–16 MHz) cross between daughter and main
+  on 2× **Amphenol SMP‑FS2A‑645** smooth‑bore bullets between SMP‑MSSB
+  class PCB jacks on each board; **5–6 mm** standoff height; ±0.5 mm
+  radial / ±0.25 mm axial self‑alignment; 20 GHz rated (bandwidth
+  unused on these signals but the blind‑mate geometry is proven and
+  the same jack family is used at 20 GHz on the daughter RF‑probe
+  test point). Interconnect BOM ~$36 / module. MMCX was considered as
+  a cheaper semi‑blind‑mate alternative and rejected — see
+  *Alternatives considered*. DC / bias / telemetry crosses on a single
+  **2×3 1.27 mm Samtec header pair**; mechanical fix is **4× M2.5
+  brass standoffs** sized to the SMP stack.
+- **Shielding** — 2× **Laird BMI‑S‑205‑F + BMI‑S‑205‑C** two‑piece SMD
+  shield cans (38.1 × 25.4 × 6.0 mm) on the main board, one over each
+  of the two RF compartments (C1 LO, C2 IF). Frame reflows with the
+  board; cover snap‑fits and is removable for bring‑up. Replaces the
+  original Harwin S02 selection (insufficient catalogue size match
+  for the new compound‑outline floorplan). Compartment trade‑off in
+  "Compartment strategy" below.
 
 | Ref | Part | Role | Cost | Source |
 |---|---|---|---|---|
 | X211 | **Southwest 292‑04A‑5** (or Rosenberger 02K80‑40ML5) *(external buy)* | 3.5 mm female edge‑launch, DC–33 GHz, mates with SMA | ~$18–25 | [DigiKey](https://www.digikey.com/en/products/result?keywords=292-04A-5) · [Mouser](https://www.mouser.com/c/?q=3.5mm+edge+launch) |
 | X50, X75 | Amphenol RF **132136** *(external buy)* | SMB right‑angle PCB jack ×2, DC–4 GHz | ~$9 ea | [DigiKey](https://www.digikey.com/en/products/detail/amphenol-rf/132136/1477587) · [Mouser](https://www.mouser.com/c/?q=132136) |
-| W216 | Würth **61201021621** *(in stock)* | **2×5** 2.54 mm shrouded box header (WR‑BHD), 10 contacts, through‑hole straight, gold‑plated, 3 A / 250 V | stock | [DigiKey](https://www.digikey.com/en/products/result?keywords=61201021621) · [Mouser](https://www.mouser.com/c/?q=61201021621) |
+| W216 | Würth **61201021621** *(in stock)* | **2×5** 2.54 mm shrouded box header (WR‑BHD), 10 contacts, through‑hole straight, gold‑plated, 3 A / 250 V. Header body is ~17 × 9 × 9 mm; the 8 × 28 mm "W216" entry in the *Mechanical envelope (measured)* table refers to the **PCB tab** that carries it, matching the original A211 tab geometry (drop‑in to the existing chassis cutout). | stock | [DigiKey](https://www.digikey.com/en/products/result?keywords=61201021621) · [Mouser](https://www.mouser.com/c/?q=61201021621) |
 | Substrate (RF core daughter) | Rogers **RO4350B** 0.51 mm, 2‑layer, ENIG *(external buy — JLCPCB HF service, 5 pc)* | Low‑loss RF laminate carrying limiter + AVA‑223MP+ + pad + MSPD2018 (≈ 25 × 40 mm) | ~$47 (5 pc) | [Rogers RO4350B](https://www.rogerscorp.com/advanced-electronics-solutions/ro4000-series-laminates/ro4350b-laminates) |
 | Substrate (main board) | **FR‑4 4‑layer**, 1.6 mm, ENIG *(external buy — JLCPCB standard, 5 pc)* | Carries LO chain, IF chain, LDOs, supervisor, connectors — RF core daughter mounts on top and plugs in via the SMP board‑to‑board bullets + pin header | ~$15–25 (5 pc) | JLCPCB / PCBWay standard |
 | Board‑to‑board bullet | 2× **Amphenol RF SMP‑FS2A‑645** *(external buy)* | SMP plug‑to‑plug smooth‑bore bullet, 6.45 mm OAL, bullet rated DC–26.5 GHz; **as installed between two SMP‑MSSB jacks the hop is jack‑limited to DC–20 GHz** (see jack row below). Carries LO (206–234 MHz) and IF (10–16 MHz) between daughter and main. Smooth‑bore for easy rework; ±0.5 mm radial self‑alignment. | ~$6 ea | [DigiKey](https://www.digikey.com/en/products/result?keywords=SMP-FS2A-645) · [Mouser](https://www.mouser.com/c/?q=SMP-FS2A-645) |
 | Board‑to‑board jacks | 2× **Amphenol RF SMP‑MSSB‑PCS17T** (SMT, brass, enhanced 20 GHz, T&R) on the **Rogers daughter** + 2× **Amphenol RF SMP‑MSSB‑PCT‑10** (through‑hole, brass, enhanced 20 GHz) on the **FR‑4 main** *(external buy)* | SMP smooth‑bore female PCB jack, 4 total (2 per board), **all rated DC–20 GHz** on Amphenol's enhanced‑geometry brass line. Termination split chosen per board: SMT on the thin Rogers daughter preserves the bottom GND pour inside the J1 / J2 / standoff cavity fence (no TH clearance holes); through‑hole on the FR‑4 main anchors the jack barrel into the 1.6 mm substrate for repeated bullet‑pull mate cycles during bring‑up and keeps the main‑board jacks mechanically indifferent to bench‑cable detent class (enables the Bucket G AliX‑gamble path). Do **not** substitute plain SMP‑MSSB‑PCS (brass SMT) or SMP‑MSSB‑PCT (brass TH) — both are non‑enhanced 18 GHz variants; the `‑17` / `‑10` suffix denotes the enhanced 20 GHz geometry. Mates with the FS2A‑645 bullet. | ~$6 ea (both variants) | [Amphenol PCS17T](https://www.amphenolrf.com/smp-mssb-pcs17t.html) · [Amphenol PCT‑10](https://www.amphenolrf.com/smp-mssb-pct-10.html) · [Mouser](https://www.mouser.com/c/?q=SMP-MSSB) |
 | Board‑to‑board header | 1× 2×3 1.27 mm SMT pin header on daughter (Samtec **FTS‑103‑01‑L‑DV**) + 1× mating socket on main (Samtec **CLM‑103‑02‑L‑D**) *(external buy)* | DC / bias / telemetry (+10 V AVA drain, V_GG1 AVA (≈−0.8 V typ, passive divider off W216.5 −15 V), DRAIN_KILL, 2× GND, 1× reserved) — unchanged by the RF connector choice. V_GG2 (+3.5 V typ, gate 2) is generated on the daughter from the +10 V drain pad and does not cross J3. MSPD2018‑E50 is a passive hybrid and needs no daughter‑side bias rail. | ~$5 pair | [DigiKey](https://www.digikey.com/en/products/result?keywords=FTS-103-01-L-DV) · [Mouser](https://www.mouser.com/c/?q=FTS-103-01-L-DV) |
 | Board‑to‑board standoffs | 4× M2.5 brass standoffs *(in stock)*, **5–6 mm** height (2× SMP‑MSSB jack body + SMP‑FS2A‑645 6.45 mm OAL bullet). Final value confirmed at daughter layout review. | Sets the Z‑gap between daughter and main; tolerance ±0.1 mm absorbed by the connector's own axial compliance | stock | Würth / Keystone stock |
-| Shield | Harwin **S02** tin‑plate can ×2 *(external buy)* | RF compartment covers (see "Compartment strategy" below) | ~$6 total | [DigiKey](https://www.digikey.com/en/products/result?keywords=Harwin+S02) · [Mouser](https://www.mouser.com/c/?q=Harwin+S02) |
+| Shield | **Laird BMI‑S‑205‑F frame + BMI‑S‑205‑C lid ×2** *(external buy)* — supersedes the original Harwin S02 selection | Two‑piece SMD shield can over each RF compartment (38.1 × 25.4 × 6.0 mm); BMI‑S‑205‑F is the SMD frame (reflowed with the board), BMI‑S‑205‑C is the removable cover (snap‑fit, removable for bring‑up access). Standard catalogue size — no NRE. Milled aluminum lids over a gasket pattern held as plan B if SMD cans prove insufficient. See "Compartment strategy" below. | ~$26 total | [DigiKey BMI‑S‑205‑F](https://www.digikey.com/en/products/result?keywords=BMI-S-205-F) · [DigiKey BMI‑S‑205‑C](https://www.digikey.com/en/products/result?keywords=BMI-S-205-C) |
 
 ### Test & bring‑up cables (bench side)
 
@@ -640,6 +993,22 @@ Builds, spectrum‑analyzer sniffs, X211 RF input, and Phase B VNA
 sweeps — no further bench purchase planned.
 
 ### Compartment strategy — one vs two shield cans
+
+> **Partially superseded by *Architecture decision (2026‑04‑26):
+> lateral carrier topology*.** The two‑compartment decision (one can
+> over the LO chain, one over the IF chain) is **kept**. What changed:
+> (a) the can hardware is now **Laird BMI‑S‑205‑F frame + BMI‑S‑205‑C
+> lid** (not Harwin S02), (b) the Rogers daughter no longer sits
+> *inside* Compartment 2 — it sits on the **carrier extension peninsula
+> east of the main body** (D = 41..82) and is shielded by the chassis
+> wall, not by the BMI‑S‑205 cans, and (c) the LO‑output → MSPD path
+> no longer crosses an internal shield wall (the MSPD lives on the
+> Rogers daughter east of both cans, so the wall‑crossing slot
+> described below is **not built**; the LO crosses out of C1 east
+> through the routing gap and onto the BTB pin row instead). The
+> three‑option trade study and the two‑compartment rationale below
+> remain the canonical reasoning; the can part numbers and the
+> daughter location notes are stale.
 
 The shield cans (Harwin S02 or equivalent tin‑plate stamped frame +
 lid) are the single biggest layout choice that isn't driven by the
@@ -750,6 +1119,17 @@ plane.
   is filtered by its own feedthrough cap.
 
 #### Board‑to‑board interconnect (daughter ↔ main)
+
+> **Superseded by *Architecture decision (2026‑04‑26): lateral
+> carrier topology*.** Three signal classes (LO, IF, DC) now cross on
+> **1× Samtec ERM8/ERF8 20‑pin vertical‑mate BTB** (header
+> `ERM8-010-02.0-L-DV-TR` on FR‑4 carrier extension, socket
+> `ERF8-010-05.0-S-DV-TR` on Rogers underside; **7 mm mated stack
+> height**) with the GND‑fenced pinout documented in that section
+> (7 active signals + 13 GND). The daughter is no longer stacked on
+> the main; it sits laterally on a carrier extension of the FR‑4.
+> The historical three‑connector‑family description below (SMP +
+> header + standoffs) is retained for context.
 
 Three signal classes cross between the Rogers daughter and the FR‑4
 main, each handled by its own connector family:
@@ -919,6 +1299,54 @@ shrinkage — any tightening there eats the alignment budget.
 
 #### Wall‑crossing inventory (Compartment 2)
 
+> **Partially superseded by *Architecture decision (2026‑04‑26):
+> lateral carrier topology*.** The three wall‑crossing **methods**
+> below (feedthrough cap, microstrip‑under‑slot, connector body
+> through wall) are still the canonical menu and the section's
+> rationale is kept as the reference. What's stale in the table that
+> follows:
+>
+> - The **AVA‑223MP+ now lives on the Rogers daughter**, not inside
+>   C2. So the rows for **+10 V AVA drain**, **V_GG1 AVA**, and
+>   **DRAIN_ENABLE → AVA** are not C2 wall crossings — those signals
+>   now cross between FR‑4 main and Rogers via dedicated pins on the
+>   20‑pin Samtec ERM8/ERF8 BTB (see the BTB pinout in *Architecture
+>   decision (2026‑04‑26)*: P3/P4/P5 = +10 V drain ×3 paralleled,
+>   P15 = V_GG1, P16 = DRAIN_ENABLE). Feedthrough capacitors on those
+>   nets, if used at all, sit on the **C2 wall for IF/AG302
+>   compartment ingress only** (V_GG1 / DRAIN_ENABLE are not consumed
+>   inside C2 in the new topology — they tunnel straight from the
+>   supervisor cluster south of C1 across to the BTB on the carrier
+>   extension, with no can wall crossing required).
+> - The **234 MHz LO no longer crosses an internal C1↔C2 shield wall**
+>   — it exits C1 east into the routing gap (D ≈ 40, H ≈ 60..73, U.FL
+>   test pad lives in the same gap), then enters the BTB on pin P12.
+>   The **microstrip‑under‑slot** technique described below is
+>   therefore **not built** on this revision. The technique is kept
+>   in the section as a future reference if a downstream revision
+>   re‑introduces an internal LO crossing.
+> - The **2–20 GHz RF from X211** never enters C2 — X211 is edge‑
+>   launched on the **Rogers east short edge** (D = 82, H = 78), and
+>   the limiter / AVA / Pad3 / MSPD chain is entirely on the Rogers
+>   daughter. The RF path stays on the daughter under chassis
+>   shielding and never touches a BMI‑S‑205 wall.
+> - **C2 ingress that survives**: +5 V AG302 bias, AG302 control / DC
+>   nets, IF return path from the BTB.IF pin into the LFCN‑105+ input
+>   pad (the BTB pin row sits in the routing gap immediately east of
+>   C2, so the IF crosses one C2 east‑wall feedthrough into the LPF
+>   input).
+> - **C2 egress that survives**: 10–80 MHz IF to X75, DIAGSAMP
+>   (detector + OPA2180 buffer location TBC at layout: if it sits in
+>   C1 to tap the LO output it crosses C1's wall, otherwise it sits
+>   south of the cans entirely and crosses no can wall), VARSAMP
+>   (sits south of C1 with the supervisor cluster, no can wall
+>   crossing required).
+>
+> The tabulated row list below is the **pre‑lateral‑carrier**
+> inventory and needs to be re‑drawn against the BTB‑centred topology
+> at layout time. The methods + rationale paragraphs above the table
+> remain canonical.
+
 Three distinct wall‑crossing methods are used, each matched to the
 signal type:
 
@@ -959,7 +1387,7 @@ All feedthrough caps are Murata, stocked at Mouser (verified November 2026):
 | +5.2 V LO drain rail into C1 (2× PGA‑103+, ~194 mA typ / 240 mA max) | in C1 | 1 | **NFE61PT102E1H9L** | 1 nF | 1206, 50 V, 6 A |
 | **234 MHz LO, C1 → C2** | C1 → C2 | — | **Microstrip‑under‑slot** (50 Ω trace through a ≤ 1.5 mm slot in shared frame, Eccosorb BSR foam in C1 cavity to damp slot radiation) | — | — |
 | 10–80 MHz IF to X75 | out C2 | — | **Connector body through wall** (SMB jack mounted in C2 wall; LO rejection is done by the on‑PCB notch + LFCN‑105+ upstream, not at the crossing) | — | — |
-| 2–20 GHz RF from X211 | ext → C2 | — | Connector body through wall (3.5 mm edge‑launch jack mounted in C2 wall) | — | — |
+| 2–20 GHz RF from X211 | ext → C2 | — | Connector body through wall (3.5 mm edge‑launch jack mounted on a **short (55 mm) edge** of the FR‑4 main inside C2; in the modernization X211 migrates from the deleted milled microwave casing onto the main board, axis along H, with RF crossing to the Rogers daughter via an SMP bullet hop) | — | — |
 
 **Locked feedthrough‑cap BOM (per board, both compartments):**
 
@@ -1111,13 +1539,17 @@ the predicted 35+ dB notch or a disappointing 15 dB):
 | LO chain | ~$30 |
 | IF chain | ~$9 (LFCN‑105+, discrete LC notch, AG302‑86G LNA; no post‑LNA trim pad needed because AG302‑86G's native 15.6 dB lands X75 inside A10's 0 ± 5 dBm without an attenuator) |
 | Bias + supervisor + telemetry | ~$29 (OPA2180 zero‑drift DIAGSAMP buffer, TLV9004 quad supervisor, BAT54S detector, PDZ12BGWJ clamp, VARSAMP divider, GBIAS1/GBIAS2 passive gate‑bias networks) |
-| Connectors / shield / misc passives | ~$98 (3.5 mm X211 @ ~$22 + **2× SMB 132136 @ $9** + W216 header + 2× shield + **2× SMP‑FS2A‑645 bullets @ $6** + **4× SMP‑MSSB PCB jacks @ $6** (2× PCS17T SMT on daughter + 2× PCT‑10 TH on main) + **2×3 1.27 mm header pair @ $5** + 4× M2.5 standoffs @ $1 + ~$1.71 locked feedthrough caps across both compartments) |
+| Connectors / shield / misc passives | ~$98 (3.5 mm X211 @ ~$22 + **2× SMB 132136 @ $9** + W216 header + **2× Laird BMI‑S‑205‑F frame + 2× BMI‑S‑205‑C lid @ ~$26 total** + **1× Samtec ERM8/ERF8 20‑pin vertical‑mate BTB pair @ ~$28** (`ERM8-010-02.0-L-DV-TR` header + `ERF8-010-05.0-S-DV-TR` socket; supersedes the prior SMP‑bullet + 2×3 header stack) + **4× M2 brass standoffs, L = 7 mm @ $1** + ~$1.71 locked feedthrough caps across both compartments) |
 | **Total, one built module** | **~$396** — sum of the rows above; the two PGA‑103+ LO stages, Pad_IS, Pad2, per‑stage RFCs, and the second LT3045 are all already counted in the LO‑chain and bias lines. |
 
-PCB cost adds ~$15 for the hybrid Rogers daughter + FR‑4 main stack‑up.
-The board‑to‑board SMP interconnect (~$36 — bullets + jacks rated to
-20 GHz) is what delivers the ≤ 0.1 dB / ≤ 1.3 VSWR hop performance;
-a cheaper generic bullet would roll off in the top octave. Bench‑side
+PCB cost adds ~$15 for the hybrid Rogers daughter + FR‑4 main stack‑up
+(now a compound outline with the 41 × 47 mm carrier extension peninsula
+on the FR‑4 side; see *Architecture decision (2026‑04‑26): lateral
+carrier topology*). The board‑to‑board interconnect (~$28 — Samtec
+Edge Rate® ERM8/ERF8 20‑pin vertical‑mate BTB, vendor‑qualified to
+28 GHz on the differential lanes) carries LO + IF + DC + GND on a
+single connector; the prior SMP‑bullet + header path is superseded.
+Bench‑side
 adapters (see "Test & bring‑up cables" above) are a **one‑time
 ~$134 VAT‑incl lab purchase** for the locked core (2× Amphenol
 **095‑902‑581‑006** TFlex 405 R/A cables, 26.5 GHz, LD‑verified via
@@ -1279,7 +1711,7 @@ service tier. Both use ENIG finish.
 | Layer count | **4** (top signal, inner GND, inner PWR, bottom signal) |
 | Thickness | 1.6 mm (0.2 mm outer prepreg → tight ground reference for LO/IF traces) |
 | Copper | 1 oz outer, 0.5 oz inner, ENIG finish |
-| Board size | ~80 × 120 mm typical |
+| Board size | **≤ 55 × 114 mm** (re‑floorplanned against measured A21 envelope 57 × 116 × 23 mm — see *Mechanical envelope (measured)*; placeholder 80 × 120 mm overshoots depth by 23 mm and was retired) |
 | 5 pc price | **~$15–25** (JLCPCB 4‑layer standard tier) |
 | Min. trace / space | 4/4 mil |
 | Lead time | 2–4 working days + shipping |
@@ -1338,11 +1770,27 @@ Order 5 pc of the Phase C main board on the first run. Each Phase A
 build is the same PCB with a different populated subset; parts from
 earlier builds stay in place and roll into the next.
 
+Populate order follows the **lateral‑carrier floorplan** (see
+*Architecture decision (2026‑04‑26): lateral carrier topology* and
+the floorplan ASCII view, lines 174 ff.). The two shield cans are
+**stacked along H** on the FR‑4 main body at D = 2..40, with C1 (LO)
+at H = 35..60, the routing gap (C1↔C2 wall + U.FL test pads + bulk
+caps) at H = 60..73, and C2 (IF) at H = 73..98. The supervisor
+quadrant sits **south of C1** at D = 10..41, H = 0..32, outside both
+cans. The Rogers daughter sits on the **carrier extension peninsula**
+east of the cans at D = 41..82, H = 35..82, mated through the
+20‑pin Samtec ERM8/ERF8 BTB at D = 64..70, H = 55..69.
+**Build 1** populates the supervisor quadrant + W216 header on the
+8 × 28 mm tab + rail‑health LEDs on the I/O edge (D = 0); **Build 2**
+adds the LO chain inside C1; **Build 3** adds the IF chain inside C2;
+**Build 4** mounts the Rogers daughter on the carrier extension via
+the BTB.
+
 | Build | What gets populated | What stays DNP | What it proves |
 |---|---|---|---|
-| **Build 1 — supervisor + VARSAMP stand‑alone** | LT3045 +10 V / ADM7154 +5 V LDOs + input caps; TPS3808G01 + TLV9004 (quad) + BSS308PE supervisor (rail protection only, all on +5.2 V); VARSAMP divider (2.80 kΩ 0603 + 432 Ω 0805, 0.1 % 10 ppm precision kit) off W216.4; **DNP dummy‑load kit** (R_SELb + R_DUMMY + LED) on each MMIC drain pad | All MMICs, LO chain, IF chain, DIAGSAMP detector/buffer, Rogers daughter, shield cans, all connectors beyond the +15 V / +7.5 V / logic harness | Drain kill ≤ 10 µs after any rail sag on +10 V or +5.2 V; window‑comparator trip points; LDO output noise; quiescent draw; **VARSAMP on W216.9 reads 1.00 ±0.05 V across VA7.5‑P spec range** (dial VA7.5‑P from 7.25 V to 7.75 V on the bench PSU, watch VARSAMP stay inside 0.9–1.1 V). LEDs on dummy loads blink off = kill works. DIAGSAMP is expected to read ~0 V at this build (LO chain absent, detector gets no drive). |
-| **Build 2 — + LO chain + DIAGSAMP detector** | Add Pad1, JMS‑1H+, BFCN‑212+, U2a PGA‑103+, Pad_IS, U2b PGA‑103+, Pad2, per‑stage RFCs + bias decoupling ladder; LT3045 #2 populated at +5.2 V (I_lim = 250 mA); **DIAGSAMP front end** (Cpick + BAT54S + smoothing RC + OPA2180 buffer + PDZ12BGWJ clamp). Dummy loads stay fitted on AVA / 2× PGA / AG302‑86G. | AVA‑223MP+, MSPD2018, IF chain still DNP | Inject 103–117 MHz at X50; measure at **J1' SMP bullet‑pull** (pull the bullet on the main‑board side, mate an SMP‑to‑SMA adapter). Verify 206–234 MHz out at +19 dBm ±0.5 dB flat, 110 MHz feedthrough ≤ −20 dBc, 3rd‑harmonic (~660 MHz) ≤ −30 dBc, total LO‑chain draw ≈ 194 mA typ on the +5.2 V rail (≤ 240 mA worst‑case), both MMICs inside 60 °C rise. Low‑frequency stability: no oscillation on spectrum analyzer 1 MHz–500 MHz with input open/short/50 Ω. **DIAGSAMP bring‑up:** measure W216.10 across the LO sweep; trim Cpick (0.5 → 2 pF ladder pads laid in) and/or OPA2180 gain resistors until DIAGSAMP reads 8–10 V across 206…234 MHz at nominal drive; verify it drops below 7.5 V when LO input at X50 is removed. |
-| **Build 3 — + IF chain** | Add LFCN‑105+, 2‑stage series‑LC LO‑rejection notch (f₀ ≈ 212 / 232 MHz), AG302‑86G (pre‑screened per `ag302_86g_screening_plan.md`). DNP pickoff pads after LFCN‑105+ and after notch are populated for this build only, removed in Build 4. | AVA‑223MP+, MSPD2018, Rogers daughter still DNP | Inject 10.3–15.6 MHz at the IF SMP jack (daughter side, bullet pulled), measure at X75. Verify **gain +15 dB ±0.5 dB flat** across 10.3–15.6 MHz (LPF −0.5 + notch −0.2 + AG302‑86G +15.6 = +14.9 dB net), notch depth ≥ 35 dB across 206–234 MHz, passband loss ≤ 0.5 dB at 15.6 MHz, NF, P1dB. **X75 output level check:** with the MSPD populated and nominal RF / LO drive, confirm X75 lands inside A10's 0 ± 5 dBm acceptance across 2–20 GHz RF sweep (worst case ≈ −4.1 dBm @ 20 GHz band edge / CL = 22 dB, typical ≈ −0.1 dBm mid-band / CL = 18 dB). If X75 comes out > +1 dBm (AG302 screened Id at the high side of the 30–40 mA window, or MSPD CL mid‑band below 18 dB), add a 1–2 dB **discrete 0805 T‑pad** at the optional IF‑trim footprint between notch and AG302 input (iron‑reworkable; per the T‑pad resistor spec). If notch under‑performs, pickoff pads let you decompose per stage. |
+| **Build 1 — supervisor + VARSAMP stand‑alone** | LT3045 +10 V / ADM7154 +5 V LDOs + input caps; TPS3808G01 + TLV9004 (quad) + BSS308PE supervisor (rail protection only, all on +5.2 V); VARSAMP divider (2.80 kΩ 0603 + 432 Ω 0805, 0.1 % 10 ppm precision kit) off W216.4; **DNP dummy‑load kit** (R_SELb + R_DUMMY + LED) on each MMIC drain pad. **Mech**: populates the **supervisor quadrant** at D = 10..41, H = 0..32 (LT3045 #1 thermal pour, TLV9004, BSS308PE) + W216 header on the 8 × 28 mm tab at D = 0..10, H = 0..17 + rail‑health LEDs on the I/O edge (D = 0); both C1 and C2 shield‑can frames stay off (no RF parts present); the BTB header at D = 64..70, H = 55..69 stays unmated (Rogers absent). | All MMICs, LO chain, IF chain, DIAGSAMP detector/buffer, Rogers daughter, shield cans, all connectors beyond the +15 V / +7.5 V / logic harness | Drain kill ≤ 10 µs after any rail sag on +10 V or +5.2 V; window‑comparator trip points; LDO output noise; quiescent draw; **VARSAMP on W216.9 reads 1.00 ±0.05 V across VA7.5‑P spec range** (dial VA7.5‑P from 7.25 V to 7.75 V on the bench PSU, watch VARSAMP stay inside 0.9–1.1 V). LEDs on dummy loads blink off = kill works. DIAGSAMP is expected to read ~0 V at this build (LO chain absent, detector gets no drive). |
+| **Build 2 — + LO chain + DIAGSAMP detector** | Add Pad1, JMS‑1H+, BFCN‑212+, U2a PGA‑103+, Pad_IS, U2b PGA‑103+, Pad2, per‑stage RFCs + bias decoupling ladder; LT3045 #2 populated at +5.2 V (I_lim = 250 mA); **DIAGSAMP front end** (Cpick + BAT54S + smoothing RC + OPA2180 buffer + PDZ12BGWJ clamp). Dummy loads stay fitted on AVA / 2× PGA / AG302‑86G. **Mech**: populates **Compartment 1** (LO chain at D = 2..40, H = 35..60), with the **C1 BMI‑S‑205‑F frame installed (lid OFF for spectrum probing)**; **X50 SMB** at D = 0, H = 35 as C1 input; **DIAGSAMP front end** sits in the routing gap immediately south of C1 (D ≈ 25..40, H ≈ 32..35) so the BAT54S Cpick taps the LO output trace just before it leaves the can east wall. The **U.FL LO test pad** (D ≈ 40, H ≈ 60..73) is the LO bring‑up probe point. The BTB header stays unmated; the **Pad2 → BTB.LO trace** terminates into a 50 Ω chip resistor at the BTB pad for this build (DNP at Build 4). | AVA‑223MP+, MSPD2018, IF chain, Rogers daughter still DNP | Inject 103–117 MHz at X50; measure at the **U.FL LO test pad** (mate a U.FL → SMA pigtail). Verify 206–234 MHz out at +19 dBm ±0.5 dB flat, 110 MHz feedthrough ≤ −20 dBc, 3rd‑harmonic (~660 MHz) ≤ −30 dBc, total LO‑chain draw ≈ 194 mA typ on the +5.2 V rail (≤ 240 mA worst‑case), both MMICs inside 60 °C rise. Low‑frequency stability: no oscillation on spectrum analyzer 1 MHz–500 MHz with input open/short/50 Ω. **DIAGSAMP bring‑up:** measure W216.10 across the LO sweep; trim Cpick (0.5 → 2 pF ladder pads laid in) and/or OPA2180 gain resistors until DIAGSAMP reads 8–10 V across 206…234 MHz at nominal drive; verify it drops below 7.5 V when LO input at X50 is removed. |
+| **Build 3 — + IF chain** | Add LFCN‑105+, 2‑stage series‑LC LO‑rejection notch (f₀ ≈ 212 / 232 MHz), AG302‑86G (pre‑screened per `ag302_86g_screening_plan.md`). DNP pickoff pads after LFCN‑105+ and after notch are populated for this build only, removed in Build 4. **Mech**: populates **Compartment 2** (IF chain at D = 2..40, H = 73..98), with the **C2 BMI‑S‑205‑F frame installed (lid OFF for IF / VNA probing)**; **X75 SMB** at D = 0, H = 98 as C2 output. Rogers daughter and BTB still unmated; **X211 stays DNP** at this build (X211 lives on the Rogers east edge in the final assembly — see Build 4). The IF chain is exercised through the **U.FL IF test pad** in the routing gap (D ≈ 40, H ≈ 60..73), which taps the LFCN‑105+ input pad and substitutes for the BTB.IF pin during Build 3. | AVA‑223MP+, MSPD2018, Rogers daughter, X211, BTB still DNP | Inject 10.3–15.6 MHz at the **U.FL IF test pad** (mate a U.FL → SMA pigtail), measure at X75. Verify **gain +15 dB ±0.5 dB flat** across 10.3–15.6 MHz (LPF −0.5 + notch −0.2 + AG302‑86G +15.6 = +14.9 dB net), notch depth ≥ 35 dB across 206–234 MHz, passband loss ≤ 0.5 dB at 15.6 MHz, NF, P1dB. **X75 output level check** is deferred to Build 4 (needs the MSPD and Rogers daughter populated to land an end‑to‑end RF→IF level); at Build 3 the IF chain alone is verified for gain and notch depth using the U.FL IF substitute injection. If X75 comes out > +1 dBm in Build 4 (AG302 screened Id at the high side of the 30–40 mA window, or MSPD CL mid‑band below 18 dB), add a 1–2 dB **discrete 0805 T‑pad** at the optional IF‑trim footprint between notch and AG302 input (iron‑reworkable; per the T‑pad resistor spec). If notch under‑performs at Build 3, pickoff pads let you decompose per stage. |
 
 **Phase A incremental cost:** ~$3 for the DNP bring‑up kit shipped
 with the BOM (R_SELa/b selectors, R_DUMMY, LED + 1 kΩ, pickoff‑pad
@@ -1352,12 +1800,20 @@ were going to be fitted to the production module anyway, so there is
 (~$20 for 5 pc) serves Phase A, Phase B bias harness, and Phase C in
 the same order — not a Phase A‑specific fab.
 
-**Phase B bias supply:** Phase B (Rogers daughter bring‑up) plugs into
-the main board's J3′ pin header once the main board has reached
-Build 2 or Build 3, using the supervisor‑protected +10 V rail and the
-V_GG1 tap (≈−0.8 V typ) the main board already provides. V_GG2 is
+**Phase B bias supply:** Phase B (Rogers daughter bring‑up) mates the
+daughter's ERF8 socket onto the main board's ERM8 BTB header on the
+carrier extension (D = 64..70, H = 55..69) once the main board has
+reached Build 2 or Build 3, drawing the supervisor‑protected +10 V
+drain (BTB pins P3/P4/P5 paralleled), V_GG1 (≈−0.8 V typ, BTB pin
+P15), DRAIN_KILL (BTB pin P16), and GND from the BTB. V_GG2 is
 generated on the daughter itself, local to the AVA VGG2 pin, so no
-extra J3 pin is needed. No separate bias board is needed.
+extra BTB pin is needed. The same BTB carries the LO drive (P12) and
+IF return (P19) lanes, so the daughter is fully exercised through
+this single 20‑pin connector with no auxiliary bias header. For
+standalone bench characterisation off the main board (e.g. before the
+main is at Build 2), an alternative path is to mate the daughter
+ERF8 socket onto a small Phase B test breakout fixture (FR‑4, ERM8
+header + bench SMB / banana posts) — see Phase B BOM row.
 
 **Optional fallback:** if Build 3 measures notch depth < 30 dB across
 206–234 MHz, a small dedicated **IF‑notch trim sub‑board** can be
@@ -1458,8 +1914,8 @@ load.
 | RF buffer | **AVA‑223MP+** | ~$85 |
 | RF‑path attenuator (Pad3) | 1× **Kyocera AVX AT0603C09ECATB** (9 dB, 0.75 W) + 1× **Ohmite TFA16C04DBER** (4 dB, default trim; TFA16C01/02/03/05 shelf kit for swap‑trim) | ~$15.30 |
 | MSPD2018‑E50 footprint | — (unpopulated in Phase B) | $0 |
-| Connectors | 1× 3.5 mm edge‑launch (X211 in) + 3× SMP jumpers (LO in, IF out, RF‑to‑MSPD bypass) + 1× pin header (bias) | ~$41 |
-| Bias | plug into the partially‑populated main board (Build 2 or Build 3) via the J3 pin header harness — supervisor‑protected +10 V drain and V_GG1 tap (≈−0.8 V) straight from the production PCB. V_GG2 (+3.5 V, gate 2) is generated on the daughter from the +10 V pad via a local passive divider + Zener clamp. | ~$0 (reused) |
+| Connectors | 1× 3.5 mm edge‑launch (X211 in, on Rogers east short edge) + 3× **DNP SMP test pads** populated for Phase B only (LO in, IF out, RF‑to‑MSPD bypass — these are the optional bring‑up pads on the Rogers carrier; replaced by the 20‑pin BTB path in Phase C) + 1× ERF8 20‑pin BTB socket (sockets to a Phase B test breakout that brings out +10 V drain, V_GG1, GND, and the LO / IF lanes to bench connectors) | ~$41 |
+| Bias | plug the daughter ERF8 socket onto a Phase B test breakout (a small FR‑4 fixture with the mating ERM8 header + bench SMB / banana posts) for standalone characterisation **or** plug into the partially‑populated main board (Build 2 or Build 3) carrier extension once Build 2 is sufficiently populated — either path delivers supervisor‑protected +10 V drain and the V_GG1 tap (≈−0.8 V). V_GG2 (+3.5 V, gate 2) is generated on the daughter from the +10 V pad via a local passive divider + Zener clamp. | ~$0 (reused) |
 | PCB | JLCPCB RO4350B 0.51 mm ENIG, 25 × 40 mm, 5 pc | **~$55** |
 | **Per‑unit parts + PCB share** | | **~$208** |
 
@@ -1524,29 +1980,41 @@ brings it to production configuration:
   verified with dummy loads. Both PGA‑103+ stages are already soldered from
   Build 2.
 - **Mount the Phase B Rogers daughter** (now populated with the
-  MSPD2018) via the 2× SMP‑FS2A‑645 board‑to‑board bullets (LO, IF)
-  and the J3 pin header + 4× M2.5 standoffs.
-- **Close the shield**: fit the two Harwin S02 cans over Compartments
-  1 and 2, install the feedthrough caps on all harness crossings.
+  MSPD2018) **on the FR‑4 carrier extension** (D = 41..82, H = 35..82),
+  via the 20‑pin Samtec **ERM8/ERF8** vertical‑mate BTB (header on
+  the carrier extension, socket on the Rogers underside) and 4× M2
+  brass standoffs (L = 7 mm, length‑matched to the BTB mated stack).
+  Engage the BTB so all of LO drive, IF return, +10 V drain, V_GG1
+  bias, DRAIN_KILL, and GND seat in a single connector — no SMP
+  bullets, no separate DC header. The X211 cable hops directly to
+  the daughter east short edge through the chassis north‑east cutout.
+- **Close the shields**: fit the two **Laird BMI‑S‑205‑C** removable
+  lids onto the BMI‑S‑205‑F frames already installed in Builds 2
+  and 3 (C1 over the LO chain, C2 over the IF chain); install the
+  feedthrough caps on all harness crossings. The Rogers daughter on
+  the carrier extension sits outside the BMI‑S‑205 footprint and
+  takes its shielding at the chassis level (see Open Items).
 - **Connect the X211 RF input** (3.5 mm, mates with any SMA / 3.5 mm
   bench cable) and the X75 IF output.
 
 Because the main board has already been brought up through Build 3
 and the daughter through Phase B, the only genuinely new risk at
 Build 4 is **end‑to‑end phase‑detector operation through the MSPD2018**
-and the **mechanical daughter‑to‑main interconnect tolerance** (SMP
-bullet insertion loss, J3 seating). Everything else — supervisor
-timing, LO drive level, IF gain, notch depth, AVA isolation — was
-validated earlier without integration masking the results.
+and the **mechanical daughter‑to‑main interconnect tolerance** (BTB
+mated‑stack co‑planarity, standoff length match). Everything else —
+supervisor timing, LO drive level, IF gain, notch depth, AVA
+isolation — was validated earlier without integration masking the
+results.
 
 Remaining unknowns at Build 4 entry (after Phase A + Phase B):
 
 - MSPD2018‑E50 pad / grounding behaviour on the actual daughter stack‑up
   (MACOM app note coverage).
 - Shared‑wall feedthrough cap mounting (mechanical, not RF).
-- Board‑to‑board SMP bullet + J3 pin‑header assembly tolerance
-  between the two PCBs (mitigated by the slotted standoff holes on
-  the daughter).
+- Board‑to‑board ERM8/ERF8 BTB assembly tolerance (co‑planarity of
+  BTB mate vs the four M2 standoff seats; mitigated by the standoff
+  through‑holes being slotted on the carrier extension and the BTB
+  itself absorbing ±0.25 mm axial compliance).
 - End‑to‑end conversion loss and 234 MHz LO leakage at X75 under the
   full shield.
 
@@ -1670,12 +2138,16 @@ deferred until Phase B VNA work shows it's needed.
    are slow analog DC. Remaining work is bench trim of the DIAGSAMP pickoff
    cap and OPA2180 gain at Build 2, not an interface question.
 8. **Board‑to‑board interconnect verification** — mechanical stack and
-   connector selection are specified in the "Board‑to‑board interconnect
-   (daughter ↔ main)" subsection under Compartment strategy. Verify on
-   the Phase B bench: bullet pair insertion loss ≤ 0.2 dB at 20 GHz,
-   VSWR ≤ 1.3 on LO and IF paths. The standoff‑slot alignment budget
-   must close with the actual JLCPCB outline tolerance measured on the
-   Phase B fab.
+   connector selection are now specified in *Architecture decision
+   (2026‑04‑26): lateral carrier topology* (Samtec ERM8/ERF8 20‑pin
+   vertical‑mate BTB, 7 mm mated stack, 4× M2 brass standoffs length‑
+   matched). Verify on the Phase B bench: **BTB mated‑stack co‑planarity
+   ≤ 0.1 mm** over the four‑standoff footprint (measured on the actual
+   JLCPCB carrier‑extension fab); LO and IF lanes carried as Edge Rate®
+   Series signal pairs are vendor‑qualified to 28 GHz so per‑pair IL /
+   VSWR is no longer a Phase B acceptance line. The standoff‑slot
+   alignment budget on the Rogers daughter must close with the actual
+   JLCPCB outline tolerance.
 9. **Lab inventory of bench adapters and cables** — **closed.** Drawer
    audit complete; SMP locked as the internal‑interconnect family and
    MMCX demoted to rejected alternative (see *Alternatives considered*).
@@ -1738,9 +2210,15 @@ deferred until Phase B VNA work shows it's needed.
 
    *Downstream rows now locked:* bench‑kit $ line in the Phase cost
    summary = ~$134 one‑time locked core + optional ~$15 AliX spare
-   (~$149 full kit); standoff height = 5–6 mm (SMP); Phase B
-   board‑to‑board acceptance target = bullet‑pair IL ≤ 0.2 dB at
-   20 GHz, VSWR ≤ 1.3.
+   (~$149 full kit); **standoff height = 7 mm (M2 brass, length‑
+   matched to the ERM8/ERF8 mated stack — supersedes the earlier
+   5–6 mm SMP figure)**; **Phase B board‑to‑board acceptance target
+   no longer applies as a bullet‑pair IL spec** — the BTB carries the
+   LO and IF lanes as differential‑class Edge Rate® signal pairs and
+   is qualified by the connector vendor at 28 GHz; the relevant
+   Phase B acceptance is **BTB mated‑stack co‑planarity** (≤ 0.1 mm
+   over the four‑standoff footprint) measured on the actual
+   carrier‑extension fab.
 
 10. **AVA‑223MP+ gate‑bias divider tuning (Build 2 verification)** —
     the AVA‑223MP+ is a dual‑gate GaAs pHEMT with V_GG1 = −0.8 V typ
@@ -1772,6 +2250,50 @@ deferred until Phase B VNA work shows it's needed.
     fault corners (nominal, R1 open, R_bleed open / Zener‑clamped).
     Capture .asc + plot, reference from the Build 2 acceptance
     checklist.
+
+12. **FR‑4 main‑board floorplan against measured envelope** —
+    *[Superseded by Architecture decision (2026‑04‑26): lateral
+    carrier topology. The compound FR‑4 outline (main + carrier
+    extension + W216 tab), X211‑on‑Rogers, and BTB inter‑board
+    interconnect supersede the rectangular re‑floorplan target and
+    edge assignments described below. The connector edge assignments
+    for the FR‑4 main body remain accurate; the X211 short‑edge
+    assignment is withdrawn.]* The measured A21 outer envelope is
+    **57 × 116 × 23 mm** with **≥ 8 mm of one‑sided W headroom**, an
+    **8 × 28 mm W216 PCB tab** inherited from the original A211 at one
+    end of a long edge, a **7 mm SMB pocket** on one W face for
+    X50/X75 right‑angle bodies, and **X211 migrating** from the
+    (deleted) milled microwave casing onto a short edge of the new
+    main (see *Mechanical envelope (measured)*).
+    Re‑floorplan the main board to **≤ 55 × 114 mm core + 8 × 28 mm
+    W216 tab** before committing fab. Concrete edge assignment:
+    - **Long edge A (116 mm, "I/O face")**: W216 tab (28 mm, at one
+      end, projecting 8 mm beyond core) + X50 SMB right‑angle + X75
+      SMB right‑angle, clustered at the same end of the edge. ~54 mm
+      of perimeter consumed, ~60 mm free for cap bank, rail‑health
+      LED bank, and W216 bias‑pin routing.
+    - **Short edge α (55 mm, "RF‑in face")**: X211 3.5 mm edge‑launch
+      (axis along H, 90° to the SMB cluster) at the casing end face,
+      with the Rogers daughter sited just inside it inside Compartment
+      2, and the J3 board‑to‑board header on the inner edge of the
+      daughter footprint.
+    - **Long edge B (opposite 116 mm)**: free for supervisor cluster
+      (LT3045 #1 + TPS3808 + TLV9004 + WIN_REF + BSS308PE) and the
+      LT3045 #1 copper pour / via field for its 1.5 W AVA‑drain
+      dropout.
+    - **Short edge β (opposite 55 mm)**: free for the DIAGSAMP
+      detector (BAT54S + OPA2180 + PDZ12BGWJ), test points / DNP
+      debug pickoffs, and any TH bulk‑cap real estate.
+
+    The Z budget is comfortable (FR‑4 1.6 mm + 5–6 mm gap + Rogers
+    0.51 mm + bullet + standoffs + lid ≈ 9–10 mm into a ~31 mm
+    budget) so the earlier "relocate LT3045 #1 to chassis floor"
+    fallback is **retired** — LT3045 #1 stays on the main board with
+    a copper pour / via field for its 1.5 W dropout. If the X / Y
+    area budget still does not close on the single FR‑4 sheet, the
+    remaining lever is to grow the casing on the free W face
+    (≤ 8 mm) and lay the daughter on a second tier above the main
+    rather than alongside it.
 
 
 ## Alternatives considered (not selected)
@@ -1812,6 +2334,40 @@ recoverable without re‑reading the full commit history.
   requirement once the full assembly flow is traced end‑to‑end, and
   the ~$18 BOM saving does not offset the assembly‑time cost or the
   Phase B re‑work risk.
+- **Stacked SMP‑bullet topology (Rogers sandwich above FR‑4 main).**
+  The original architecture: Rogers daughter mounted on standoffs
+  directly above the FR‑4 main, with 2× SMP‑FS2A‑645 bullets
+  carrying LO and IF across a 5–6 mm vertical gap, plus a 2×3 1.27 mm
+  Samtec header for DC bias. Rejected for the one‑off build in
+  favour of the lateral carrier topology (see *Architecture decision
+  (2026‑04‑26): lateral carrier topology*) on three grounds:
+  (i) X211 stays on its native Rogers substrate (east short edge,
+  D = 82, H = 78) instead of being migrated onto FR‑4 with an extra
+  SMP‑bullet hop — the 2–20 GHz path keeps the same number of
+  connectors and substrate transitions but loses one bullet hop and
+  the associated tolerance / IL budget; (ii) the SMP bullet + jack
+  BOM (~$36 / module) is replaced by a single ~$10–15 Samtec
+  ERF8/ERM8 BTB; (iii) DC bias and RF interconnect collapse into one
+  connector instead of three families (SMP × 2, header, standoffs),
+  simplifying assembly. Both topologies require a new chassis (the
+  original grey case is not reused in either case), so chassis
+  machining is not a deciding factor. The stacked topology was the
+  right answer when minimising in‑plane footprint mattered; once
+  the chassis was sized to the carrier‑extension peninsula anyway,
+  the sandwich's mechanical and BOM complexity lost its justification.
+- **Standalone Rogers + 4‑wire DC ribbon (lateral, no FR‑4 carrier).**
+  Intermediate proposal between the stacked SMP and the lateral
+  carrier: Rogers daughter mounted on its own chassis‑floor stand‑
+  offs in the former milled volume, joined to the FR‑4 main by 2×
+  direct‑mate SMB connectors across the 7 mm air gap and a separate
+  4‑wire ribbon (Picoblade or JST‑XH) for DC bias. Rejected in
+  favour of the FR‑4 carrier on signal‑integrity grounds (continuous
+  FR‑4 GND plane under Rogers vs discrete chassis‑standoff returns)
+  and assembly grounds (one BTB connector vs 2× SMB direct‑mate +
+  ribbon harness with separate crimp tooling). The chassis‑wall
+  modification needed to admit the carrier is acceptable on a one‑
+  off build and was the gating concern that initially favoured the
+  standalone arrangement.
 - **Dedicated Phase A sub‑boards (supervisor / LO / IF).** An earlier
   plan proposed three small FR‑4 sub‑boards to de‑risk each block
   independently. Replaced by the "one main board, four staged
@@ -1882,9 +2438,9 @@ SOIC‑8, +15 V DIAGSAMP buffer.
 | Ohmite **TFA16C04DBER** + shelf (TFA16C01/02/03/05) | Pad3B (line 447) — 4 dB trim chip + 4‑value swap shelf for 10–14 dB trim window                 | 1 + 4 | ~$1.50 |
 | Coilcraft **0603HP** series 620 nH      | L_stab1, L_stab2 (line 361) — PGA‑103+ LF‑stab inductors per AN60‑064, one per stage           | 2 | ~$1 |
 | **Southwest 292‑04A‑5**                 | X211 (line 528) — 3.5 mm female edge‑launch RF input, DC–33 GHz                                 | 1 | ~$22 |
-| Harwin **S02** tin‑plate can            | Shield (line 539) — RF compartment covers                                                       | 2 | ~$6 |
-| Amphenol RF **SMP‑MSSB‑PCS17T**          | Phase B test hooks on the Rogers daughter (LO in, IF out, RF‑to‑MSPD bypass — bundled in the Phase B $41 conn line) | 3 | ~$18 |
-| **Bucket D subtotal**                   |                                                                                                  |   | **~$64** |
+| Laird **BMI‑S‑205‑F** + **BMI‑S‑205‑C** two‑piece SMD shield can | Shield (line 539) — RF compartment covers (38.1 × 25.4 × 6.0 mm); BMI‑S‑205‑F is the SMD frame, BMI‑S‑205‑C is the removable lid (one frame + one lid per can) | 2 + 2 | ~$26 |
+| Amphenol RF **SMP‑MSSB‑PCS17T**          | DNP optional bring‑up SMP test pads on the Rogers daughter (AVA in, AVA out, MSPD RF) — populated only during Phase B characterisation; no role in the Phase C build | 3 | ~$18 |
+| **Bucket D subtotal**                   |                                                                                                  |   | **~$84** |
 
 Stock in bucket D (not on cart): notch L1 / L2 (Johanson L805W kit,
 lines 977 / 979); RFC1 / RFC2 (TDK ADL2012‑R10M‑T01, line 359); W216
@@ -1894,8 +2450,8 @@ header (Würth 61201021621 2×5 WR‑BHD, line 530).
 
 | Line item | Role | Qty | Est. |
 |---|---|---|---|
-| Rogers **RO4350B** 0.51 mm, 2‑layer, ENIG (JLCPCB HF service) | RF‑core daughter card (line 531) — ≈ 25 × 40 mm, carries limiter / AVA‑223MP+ / Pad3 / MSPD2018 | 5 pc | ~$47 |
-| **FR‑4 4‑layer**, 1.6 mm, ENIG (JLCPCB standard)             | Main board (line 532) — LO chain, IF chain, LDOs, supervisor, connectors, ~80 × 120 mm          | 5 pc | ~$20 |
+| Rogers **RO4350B** 0.51 mm, 2‑layer, ENIG (JLCPCB HF service) | RF‑core daughter card (line 531) — ≈ 25 × 40 mm, carries limiter / AVA‑223MP+ / Pad3 / MSPD2018, X211 edge‑launch on east short edge, ERF8 BTB socket on south face | 5 pc | ~$47 |
+| **FR‑4 4‑layer**, 1.6 mm, ENIG (JLCPCB standard)             | Main board (line 532) — compound outline: **41 × 100 mm main body** (LO chain, IF chain, LDOs, supervisor, X50 / X75 / W216 I/O) + **41 × 47 mm carrier extension** peninsula at +D (carries Rogers daughter on 7 mm BTB stack); see *Architecture decision (2026‑04‑26)* | 5 pc | ~$20 |
 | **Bucket E subtotal**                                         |                                                                                                  |      | **~$67** |
 
 ### Bucket F — external I/O jacks + board‑to‑board interconnect (closed)
@@ -1903,13 +2459,15 @@ header (Würth 61201021621 2×5 WR‑BHD, line 530).
 | Line item | Role | Qty | Est. |
 |---|---|---|---|
 | Amphenol RF **132136**           | X50, X75 (line 529) — SMB right‑angle PCB jacks, DC–4 GHz                                                                  | 2 | ~$18 |
-| Amphenol RF **SMP‑FS2A‑645**     | Board‑to‑board bullet (line 533) — SMP smooth‑bore plug‑to‑plug, 6.45 mm OAL, jack‑limited DC–20 GHz                       | 2 | ~$12 |
-| Amphenol RF **SMP‑MSSB‑PCS17T** *(SMT, brass, enhanced 20 GHz, T&R)* | Board‑to‑board jacks on **Rogers daughter** (line 534) — 2× SMT jacks, DC–20 GHz; SMT preserves bottom GND pour inside cavity fence | 2 | ~$12 |
-| Amphenol RF **SMP‑MSSB‑PCT‑10** *(through‑hole, brass, enhanced 20 GHz)* | Board‑to‑board jacks on **FR‑4 main** (line 534) — 2× TH jacks, DC–20 GHz; TH anchors barrel for repeated bullet‑pull mate cycles, main‑board jacks stay indifferent to bench‑cable detent class | 2 | ~$12 |
-| Samtec **FTS‑103‑01‑L‑DV** + **CLM‑103‑02‑L‑D** | Board‑to‑board header pair (line 537) — 2×3 1.27 mm SMT pin header + mating socket for DC / bias / telemetry              | 1 pair | ~$5 |
-| **Bucket F subtotal**                                                                            |                                                                                                                           |   | **~$59** |
+| Samtec **ERM8‑010‑02.0‑L‑DV‑TR** | Board‑to‑board header on FR‑4 carrier extension (line 533/537) — 20‑pin (10 × 2) 0.8 mm pitch Edge Rate®, vertical mate, lead style −02.0 (5.97 mm) | 1 | ~$8 |
+| Samtec **ERF8‑010‑05.0‑S‑DV‑TR** | Board‑to‑board socket on Rogers daughter underside (line 533/537) — 20‑pin (10 × 2) 0.8 mm pitch Edge Rate®, vertical mate, lead style −05.0 (5.34 mm); mates ERM8 above to give 7 mm mated stack height | 1 | ~$7 |
+| Hirose **U.FL‑R‑SMT‑1(10)** *(or equivalent)* | Optional U.FL test pads (line 540) — 2× on FR‑4 main routing gap between C1 and C2 cans (LO sample / IF probe access during bring‑up); DNP for production builds | 2 | ~$2 |
+| **Bucket F subtotal**                                                                            |                                                                                                                           |   | **~$35** |
 
-Stock in bucket F (not on cart): 4× M2.5 brass standoffs (line 538).
+Stock in bucket F (not on cart): 4× M2 brass standoffs **L = 7 mm**
+(line 538) — length matched to the ERM8/ERF8 mated stack so the
+Rogers daughter sits parallel and the BTB carries no mechanical load.
+The previous 4× M2.5 brass standoffs are superseded.
 
 ### Bucket G — bench test cabling (closed)
 
@@ -1929,11 +2487,11 @@ Note (not on cart): the male SMP plug on the cable is the fragile part of this i
 | A — passives / small‑signal       | closed | ~$92  |
 | B — MMICs / PIN / mixer           | closed | ~$205 |
 | C — filters / LDOs / supervisor / op‑amps | closed | ~$40  |
-| D — attenuators / inductors / connectors  | closed | ~$64  |
+| D — attenuators / inductors / connectors  | closed | ~$84  |
 | E — PCBs                                  | closed | ~$67  |
-| F — external I/O jacks + board‑to‑board interconnect | closed | ~$59 |
+| F — external I/O jacks + board‑to‑board interconnect | closed | ~$35 |
 | G — bench test cabling (core $134 + optional AliX $15) | closed | ~$149 |
-| **Cart total (PCBs at fab minimum order, parts for one module, + bench test cabling)** |  | **~$676** |
+| **Cart total (PCBs at fab minimum order, parts for one module, + bench test cabling)** |  | **~$672** |
 
 Everything in the passive / small‑signal BOM not listed in bucket A —
 10 µF / 100 nF / 10 nF / 1 nF caps, generic 0402 / 0603 1 % R kit

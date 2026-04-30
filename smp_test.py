@@ -1194,16 +1194,16 @@ def action_att_40_exercise(dev, cycles=20):
 def action_a21_probe(dev):
     """Live SCPI witnesses while physically probing A21 with scope/DMM.
 
-    Parks SMP at 10 GHz CW, POW -30 dBm, output ON, then loops reading
+    Parks SMP at 3 GHz CW, POW -30 dBm, output ON, then loops reading
     TP1902 / TP1910 / TP1915 once per second. Intended to run with the
     instrument cover off and a scope/DMM on A21 connectors x21, x50,
     x75, x95, x96. Ctrl-C to exit; a final *RST / OUTP OFF is issued
     by the outer try/finally.
     """
-    _header("A21 live probe — 10 GHz CW, POW -30, OUTP ON")
+    _header("A21 live probe — 3 GHz CW, POW -30, OUTP ON")
     dev.write("*RST")
     time.sleep(0.3)
-    dev.write("SOURCE:FREQUENCY:CW 10GHz")
+    dev.write("SOURCE:FREQUENCY:CW 3GHz")
     dev.write("POW -30")
     dev.write("OUTP:STAT ON")
     time.sleep(0.3)
@@ -1579,7 +1579,7 @@ def parse_args():
     parser.add_argument(
         "--a21-probe",
         action="store_true",
-        help="park SMP at 10 GHz POW -30 OUTP ON and stream A21"
+        help="park SMP at 3 GHz POW -30 OUTP ON and stream A21"
              " witnesses TP1902/TP1910/TP1915 once per second for"
              " physical probing with scope/DMM (Ctrl-C to exit)",
     )

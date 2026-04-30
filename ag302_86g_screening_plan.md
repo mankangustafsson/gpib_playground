@@ -2,7 +2,7 @@
 
 Procedure for screening **4 AG302‑86G units** drawn from the 50 in
 stock before one is committed to the A21 IF LNA slot (see
-`a21_modernization_design.md`, compartment‑2 IF chain). Goal is to
+`smp_a21_modernization.md`, compartment‑2 IF chain). Goal is to
 filter storage‑/handling‑damaged parts and end up with a primary +
 spare pair by Id match, using existing "MMIC Amplifier WW107 blue PCB
 v1.0" (silkscreen VV105) fixtures.
@@ -125,7 +125,7 @@ integrity. If the repeat result is still borderline, classify the part as
   stock (usable as documented spares for future projects).
 - **If fewer than 2 keepers**: test 2–3 more from stock; if systemic
   failure, fall back to GALI‑52+/‑84+ adapter PCB per
-  `a21_modernization_design.md` alternatives‑considered section.
+  `smp_a21_modernization.md` alternatives‑considered section.
 
 ## What this screening does *not* tell you
 
