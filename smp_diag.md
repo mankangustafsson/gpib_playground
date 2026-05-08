@@ -16,68 +16,27 @@ Not installed: SM-B2 (LF Generator), SMP-B12 (PUM20), SMP-B13 (PUM2), SMP-B14 (P
 
 > Superseded 2026-04-30 — full NEXT-ACTIONS-ITEM-1 banner moved to
 > [`smp_history.md#H-2026-04-30-next-actions-item-1-superseded`](smp_history.md#h-2026-04-30-next-actions-item-1-superseded).
-> Current verdict: chips (V3 = MRF3866 / V4 = MRF5160 push-pull) presumed
-> alive pending Step D.5 + Step 8a bench validation; MC34071DR2G silicon-pull
-> rebuild is on hold. New next action is the four-test bench decomposition
-> in [`smp_next.md`](smp_next.md) Status section. The §2 narrative below is retained
-> verbatim for FA traceability.
+> **Updated 2026-05-08** — Step 8a bench test confirmed V3/V4
+> MRF3866/MRF5160 push-pull PA as the root cause (chips failed under
+> RF drive on the bench). Step 8b confirmed A21 milled casing healthy.
+> "Chips alive" verdict from D.5 is now overturned. §7E silicon-pull
+> rebuild is **unblocked**. Next action: test MRF transistors in a
+> higher-current test rig, then replace.
 
-1. **Bench — Step 7E A211 ALC rebuild + verification**. Steps 1, 2,
-   4, 4.5 complete (W216 / A20-X211 / A7-X50 excluded). Step 7 A/B
-   **passed** — §7.1.7 bias chain healthy: X95 = −0.72 V, X96 =
-   +6.17 V, X72 = +14.98 V; OP97 (N90) mid-rail, BUZ71 (V90) in
-   active region, R98 ≈ 0.1 Ω with ≈ 7.4 mV across it (I_drain ≈
-   74 mA, within 7 % of the §7.4.4 80 mA target). Step 7D **failed**
-   on the lower Side-B X21 LO ALC cluster — confirmed faults: both
-   Motorola R4D SOIC-8 op-amps (output-to-rail and supply-to-supply
-   internal shorts — powered readings are mirror-symmetric, R4D-A
-   pinned to its local V− net and R4D-B pinned to its local V+ net),
-   **and the two per-chip supply filters that fused open under the
-   short-circuit current draw** (the +15 V leg to R4D-A pin 7 and the
-   −15 V leg to R4D-B pin 4, isolating each dead chip from the global
-   rail — which is why N90's ±15 V supplies next door still read
-   clean). The SOT-23 **A0** detector (re-identified off-line as a
-   two-terminal Schottky single, pin 2 truly NC, by comparison
-   against two other "A0"-marked parts on this PCB) is **stressed
-   but functional** (Vf 0.34 V vs 0.234 / 0.265 V on the healthy
-   refs — still rectifying cleanly), so A0 is **not** the trigger of
-   the R4D cascade — trigger reclassified as **TBD** (candidate
-   hypotheses: upstream LO transient, set-point divider open
-   inducing integrator wind-up, or a supply-rail transient). Failure
-   chain: trigger TBD → R4D-A killed → R4D-B killed → per-chip
-   supply fuses opened → LO collapsed at X21 → A212 starved of LO →
-   X75 / TP1910 dead with bias still nominal. Action now: power off,
-   pull all three silicon parts (R4D-A, R4D-B, and A0 — replace A0
-   anyway as cheap insurance), ohm-check the four R4D supply pads to
-   their bypass caps (two will read open — R4D-A pin 7 leg and
-   R4D-B pin 4 leg) and replace the fused series parts (22 Ω 1206
-   is a safe substitute if the original value is not readable), then
-   fit A0 (**BAT54C** SOT-23 common-cathode dual Schottky, marking
-   `L43`, fitted rotated 180° so the common cathode lands on
-   footprint pin 1; D2 unused. Vf ≈ 0.32 V at 1 mA — closer to the
-   original's barrier than BAS70-05's 0.41 V. BAS70-05 retained as
-   a second-attempt fallback if needed), R4D-A and R4D-B
-   (**MC34071DR2G** chosen for this rebuild
-   — ON Semi (ex-Motorola) SOIC-8 single, ±1.5…±22 V rated,
-   13 V/µs slew, bipolar Darlington input with ground-sensing
-   common-mode range, all-NPN output stage; standard V+ = 7, V− = 4,
-   OUT = 6 pinout. Most likely the same Motorola die family as the
-   original R4D house-mark itself. MC33071 / OP07 / OP27 / TLE2027 /
-   LT1677 also acceptable substitutes — see smp_hw_diag.md §7E.
-   Not OP97: the only OP97 on this PCB is N90, clearly marked
-   `PMI445 / OP97FS`),
-   then re-run Step 7D end-to-end (Step 7E gate, including a fresh
-   `--a21-probe` X75 / TP1910 read). **Pass + TP1910 climbs to
-   7.5 … 11 V → rebuild verified, instrument restored** (no SA work
-   on X21 needed). Pass but X75 still dead → Step 8 X21 doubler SA
-   check (+26…+30 dBm @ 206–234 MHz, ≥30 dB / ≥1 W pad fitted before
-   power-up) **as a contingent diagnostic** → Step 9 re-read X75 →
-   Step 10 IF S21 via VNA → Step 11 diag rectifier on A211.
-   **Recurring-failure escalation:** if new A0 /
-   R4D parts die again within minutes, the on-PCB LO chain
-   (V50/V60/V2/V3/V4) is over-driving X21 — measure absolute X21
-   level on the SA before a third rebuild attempt. See [Physical
-   probe worksheet → Step 7D](smp_hw_diag.md#step-7--a21-bias--a211-comparator-state-measure-dc-voltage-only-if-step-4-shows-x75-dead-with-inputs-present).
+1. **Bench — MRF transistor characterisation + replacement.** Step 8a
+   (2026-05-08) confirmed the V3/V4 MRF3866/MRF5160 push-pull PA as
+   the fault — chips worked initially then broke under RF drive at
+   close to rated output (23–24 dBm at 220 MHz before failure).
+   Desoldered parts tested in component tester: MRF3866 shows NPN,
+   no h_FE, B-E ≈ 6.4 MΩ; MRF5160 shows PNP, h_FE 70, V_BE 992 mV.
+   Spare 2N3866A (TO-39) behave similarly (no h_FE, B-E ≈ 2 MΩ).
+   **Next action:** mount MRF transistors in a test rig and test
+   with higher currents than the component tester to determine
+   whether they are truly damaged or the tester cannot characterise
+   high-f_T RF power BJTs. Then proceed to §7E rebuild with
+   replacement transistors.
+   See [`smp_next.md`](smp_next.md) Status section and
+   [Physical probe worksheet → Step 8a](smp_hw_diag.md#step-8a--on-a211-lo-chain-bench-psu-standalone-sa-board-out-no-casing).
 2. **Bench — opportunistic work while the case is open** (same
    teardown): A9 TP1607 aux-osc scope probe, SMP-B15 40 B attenuator
    diagnosis, fan part-number capture. See
@@ -346,96 +305,36 @@ clear.)
   ≈ 74 mA, within 7 % of the §7.4.4 80 mA target. No §7.1.7 crowbar
   tripped. Bias chain is **not** the source of the X75 / TP1910 dead
   symptom.
-> Superseded 2026-04-30 — full §2 STEP 7D FAILURE-CHAIN banner moved to
-> [`smp_history.md#H-2026-04-30-step-7d-failure-chain-superseded`](smp_history.md#h-2026-04-30-step-7d-failure-chain-superseded).
-> Current verdict: the "dead R4D op-amps + fused filters + stressed A0"
-> failure chain reads instead as expected DC behavior of a healthy
-> class-AB push-pull RF stage (V3 = MRF3866 NPN + V4 = MRF5160 PNP);
-> A0 SOT-23 is the DIAGSAMP envelope rectifier; chips presumed alive
-> pending Step D.5 + Step 8a bench validation. The narrative below this
-> marker is **retained verbatim for FA traceability**.
-
-- **Bench result — Step 7D failed** on the X21 LO ALC cluster (lower
-  Side-B). Confirmed faults — two dead silicon parts and two
-  fused-open supply-filter components, plus one stressed-but-
-  functional detector:
-  1. **R4D-A** internal die short (V+↔V− and output↔V+);
-  2. **+15 V supply filter to R4D-A pin 7 — fused OPEN** (per-chip
-     series resistor / ferrite bead opened under the short-circuit
-     current draw, isolating the dead chip from the global rail);
-  3. **R4D-B** internal die short (V+↔V− and output↔V+);
-  4. **−15 V supply filter to R4D-B pin 4 — fused OPEN** (same
-     mechanism on the −15 V leg).
-  5. SOT-23 **A0** detector (re-identified off-line as a
-     two-terminal Schottky single, pin 2 truly NC, by comparison
-     against two other "A0"-marked parts on this PCB): **stressed
-     but functional** — Vf 0.34 V forward (3→1) vs 0.234 / 0.265 V
-     on the healthy refs, OL reverse. Earlier "shorted in reverse
-     breakdown" reading was in-circuit and is contradicted by the
-     comparison test. A0 is therefore **not** the trigger of #1 / #3;
-     replace anyway during the rebuild as cheap insurance.
-
-  Powered readings on the R4D pair are mirror-symmetric — every pin
-  on R4D-A pinned to its local V− net (≈ −14.7 / −15.2 V), every pin
-  on R4D-B pinned to its local V+ net (≈ +14.5 / +15.1 V), with B4
-  − B7 = +0.62 V (one Vbe), the textbook signature of a chip with an
-  internal V+↔V− short whose upstream supply path on the *other*
-  rail has gone open. The OP97 (N90) next door still reads clean
-  ±15 V on its supplies, confirming the global rails are healthy and
-  the opens are local per-chip filter elements, not the rail itself.
-
-  Failure chain to symptom: **trigger TBD → R4D-A killed → R4D-B
-  killed → per-chip supply fuses opened (saving the global rail) →
-  LO drive at X21 collapsed → A212 starved of LO → X75 / TP1910
-  dead** with §7.1.7 bias still nominal — a clean explanation for
-  the observed "Step 7 passes but X75 stays dead" pattern. A0 was
-  originally hypothesised as the trigger; the comparison test
-  against reference parts demoted A0 to "stressed but functional",
-  so the trigger is now under re-investigation (candidate
-  hypotheses: upstream LO transient surviving past A0, set-point
-  divider open inducing integrator wind-up, supply-rail transient).
-- **Next action:** **Step 7E A211 ALC rebuild + verification**.
-  Power off A211 before any soldering per §7.4 / §7.5. Pull all three
-  failed silicon parts. With the chips out, run a 30-second pad-to-
-  rail DMM ohm check on the four R4D supply pads — two will read
-  open (R4D-A pin 7 leg and R4D-B pin 4 leg per the mirror-symmetric
-  analysis above); locate and replace the fused series filter parts
-  (in-kind if the value is readable, otherwise a 22 Ω 1206 is a safe
-  substitute — current-limit role only). Then fit replacements: A0
-  (**BAT54C** SOT-23 common-cathode dual Schottky, marking `L43`,
-  fitted rotated 180° so the common cathode lands on footprint pin 1
-  / anode of D1 on footprint pin 3; D2 unused with its anode on
-  footprint pin 2 / NC — completely benign. Vf ≈ 0.32 V at 1 mA,
-  closer to the original's barrier than BAS70-05's 0.41 V. BAS70-05
-  also on hand as a second-attempt fallback (identical SOT-23
-  topology and rotation rule, slightly higher Vf). HSMS-282C/K or
-  HSMS-286C/K available as SOT-323 alternatives with bench-bodge
-  fit; HSMS-2822 fits SOT-23 but needs a pad-2 solder bridge to use
-  one of its diodes. See smp_hw_diag.md Step 7E for full
-  alternatives), R4D-A and R4D-B
-  (**MC34071DR2G** for this rebuild — ON Semi (ex-Motorola) SOIC-8
-  single, ±1.5…±22 V rated, 13 V/µs slew, bipolar Darlington
-  input with ground-sensing common-mode range, all-NPN output stage;
-  standard V+ = 7, V− = 4, OUT = 6 pinout. Most likely the same
-  Motorola die family as the original "R4D" house-mark itself.
-  MC33071 / OP07 / OP27 / TLE2027 / LT1677 also acceptable
-  substitutes — see smp_hw_diag.md §7E. *Not* OP97 — N90 on this
-  PCB is the only OP97FS, clearly marked `PMI445 / OP97FS`). After
-  rebuild, re-run
-  Step 7D rows 1–6 + the R4D-B supply rows 4a / 4b (mid-rail outputs,
-  clean ±V on every supply pin, finite drop across 3R92), re-read
-  X75 / TP1910 from the same `--a21-probe` output, and re-confirm
-  Step 7 A/B still passes. **Pass + TP1910 climbs to 7.5 … 11 V →
-  rebuild verified, no further steps required.** Pass but X75 still
-  dead → **Step 8** X21 doubler spectrum on SA via ≥30 dB / ≥1 W pad
-  (contingent diagnostic only — do **not** SA-probe X21 before
-  fitting the pad; X21 carries up to +30 dBm = 1 W) → Step 9 re-read
-  X75 → Step 10 on-PCB IF |S21| via VNA, X70↔X75, with the A212 IF
-  amp powered → Step 11 diag rectifier on A211.
-  **Recurring-failure escalation:** if the new A0 / R4D parts die
-  again shortly after power-up, the on-PCB LO chain (V50/V60/V2/V3/V4)
-  is over-driving X21 — measure absolute X21 power on the SA before
-  attempting a third rebuild. See [smp_hw_diag.md → Step 7D](smp_hw_diag.md#step-7--a21-bias--a211-comparator-state-measure-dc-voltage-only-if-step-4-shows-x75-dead-with-inputs-present).
+- **Bench result — Step 8a FAILED (2026-05-08).** LO chain bench test
+  with sig-gen (110 MHz −30 dBm) → X21, SA + 25 dB attenuator + DC
+  block. Doubler, filters, and V2 (BFG97) pre-driver all working.
+  V3/V4 push-pull PA initially produced signal at X21 (DIAGSAMP rose
+  to 4–5 V, SA peak at 220 MHz reached 23–24 dBm), then output
+  dropped ~3 dB and collapsed to near-noise — power lost at V3/V4.
+  Desoldered MRF3866/MRF5160 tested in component tester: MRF3866
+  shows NPN, no h_FE, B-E ≈ 6.4 MΩ; MRF5160 shows PNP, h_FE 70,
+  V_BE 992 mV. 2N3866A spares behave similarly. **V3/V4 push-pull PA
+  confirmed as the root cause** of the X75-dead symptom.
+- **Bench result — Step 8b PASSED (2026-05-08).** A21 milled casing
+  tested standalone: SMA coax soldered to V3/V4 trace, fed 220 MHz
+  27 dBm, A211 powered (+15 V 120 mA, −15 V 70 mA), X211 fed 3 dBm
+  2–6 GHz. Good IF output at X75, up to 18 dBm. S11 at X21/X216
+  poor (2.3 dB @ 206 MHz, 5.2 @ 234 MHz, 7.6 dB dip @ 254 MHz) but
+  not shorted. **A21 milled casing (A212/A213/A214) working as
+  expected — casing exonerated.**
+- **Bench result — Step 10a PASSED (2026-05-05).** X70 → X75 on-A211
+  IF path exonerated (|S21| passband +31.4 … +31.6 dB, L72 notch at
+  −39.5 dB @ 103 MHz).
+- **Fault definitively isolated (2026-05-08):** V3/V4 MRF3866/MRF5160
+  push-pull LO PA on A211. All other A21 signal paths exonerated
+  (doubler, BFG97, IF chain, milled casing). Next: test MRF
+  transistors in a higher-current rig, then replace.
+> Superseded 2026-05-08 — Step 7D "R4D failure-chain" narrative
+> (doubly superseded: first 2026-04-30 as expected push-pull bias,
+> then 2026-05-08 when Step 8a confirmed V3/V4 as the actual root
+> cause) moved to
+> [`smp_history.md#H-2026-05-08-step-7d-r4d-failure-chain-narrative`](smp_history.md#h-2026-05-08-step-7d-r4d-failure-chain-narrative).
+> Earlier 2026-04-30 supersession note also archived there.
 
 > Superseded 2026-04-30 — "A7 step-synth marginal → A21 cascade"
 > retraction moved to

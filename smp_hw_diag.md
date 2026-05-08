@@ -762,9 +762,9 @@ Side-A escalation rule above is hit)*
 **D. X21 LO ALC sanity check — Side B lower cluster** *(in-circuit,
 casing on, `--a21-probe` running; DMM only, no SA yet)*
 
-**D.0 Current verdict (recovered schematic 2026-04-30) — Side B
-lower cluster is a class-AB push-pull RF power-amp, chips presumed
-alive.** Sheet 02/02 of A211 var.02 (drawing 1035.8840.01;
+**D.0 Current verdict (updated 2026-05-08) — Side B lower cluster
+is a class-AB push-pull RF power-amp; V3/V4 confirmed FAILED under
+RF drive (Step 8a 2026-05-08).** Sheet 02/02 of A211 var.02 (drawing 1035.8840.01;
 [`A211_var02_schematic_sheet_02_02.jpg`](rs_smp_corpus/volumes/band-3/figures/A211_var02_schematic_sheet_02_02.jpg))
 shows V3 (MRF3866-B, NPN) and V4 (MRF5160-B, PNP) drawn as a
 **class-AB push-pull RF power-output stage** driven by V2 (BFG97-B)
@@ -795,14 +795,18 @@ are the **expected DC paths through this bias network on healthy
 silicon**, not on-die C-E latch-up. The bench-measured ≈ 105 Ω
 "C-E" reading is consistent with a base-pin-to-rail measurement
 (R44 + L43 DCR + R41 ≈ 100 + ~1 + 4 ≈ 105 Ω) on a base pin, not a
-collector path. **Chips bench-confirmed alive 2026-05-03 by the D.5
-ohm cross-check** (7-probe in-circuit sweep, all readings on the
-"all as expected" branch — see [`smp_next.md` "Bench results —
-2026-05-03 (D.5 PASSED)"](smp_next.md#bench-results--2026-05-03-d5-passed)).
-Step 8a (out-of-casing bench-PSU) and Target 4 (in-instrument R65
-split-test) remain the RF validators that can falsify the chips-
-alive verdict by exclusion; until one of them fails, the §7E
-silicon-pull rebuild stays on hold.
+collector path. D.5 ohm cross-check (2026-05-03) confirmed bias
+network intact (7 probes all PASS — see
+[`smp_history.md#H-2026-05-08-d5-decision-gate-and-bench-results`](smp_history.md#h-2026-05-08-d5-decision-gate-and-bench-results)),
+but **Step 8a (2026-05-08) overturned the "chips alive" verdict**:
+V3/V4 initially produced signal (DIAGSAMP rose to 4–5 V, SA peak
+at 220 MHz reached 23–24 dBm), then output dropped ~3 dB and
+collapsed — power lost at V3/V4. Desoldered component-tester
+readings: MRF3866 NPN, no h_FE, B-E ≈ 6.4 MΩ; MRF5160 PNP,
+h_FE 70, V_BE 992 mV. Step 8b (same session) confirmed milled
+casing healthy. **Root cause: V3/V4 MRF3866/MRF5160 push-pull LO
+PA.** §7E silicon-pull rebuild is **unblocked**; next: test MRF
+transistors in a higher-current rig, then replace.
 
 Other parts in the same cluster, locked by the recovered schematic:
 
@@ -3226,6 +3230,56 @@ A21 IF and LO signal paths — leaving only Step 11 territory
 supervisor) as failure surfaces if `--a21-probe` still reads X75
 dead after reassembly.
 
+Run results — this unit (2026-05-08):
+
+**Setup:** signal generator → X50 at 110 MHz −30 dBm; SA on X21
+via 25 dB attenuator + DC block, 28 dB reference offset (lossy cable
++ DC block gives ≈ 3 dB additional loss regardless of frequency).
+500 MHz oscilloscope probing the LO signal path in parallel.
+A211 powered from bench PSU via W216: +15 V (120 mA), −15 V (70 mA),
++7.5 V (current not recorded).
+
+**Stage-by-stage observations:**
+
+- **Doubler + filters:** working. 2f product visible on SA.
+- **V2 (BFG97) pre-driver:** working as expected.
+- **V3/V4 (MRF3866/MRF5160) push-pull PA:** signal output at X21 was
+  present initially, with DIAGSAMP reading ≈ 0.4 V at the start
+  (notably higher than the 0.24 V read in-instrument). As the chain
+  warmed up, DIAGSAMP climbed to 4–5 V and the SA peak at 220 MHz
+  reached **23–24 dBm** — close to the +26…+30 dBm spec but not quite
+  there. At that point **output dropped ~3 dB**. After some fiddling
+  with input power the SA peak collapsed to near-noise — **no gain at
+  all**. Quick verification confirmed power is lost at the **V3/V4
+  MRF3866/MRF5160 complementary pair**.
+
+**Post-failure component test (desoldered):**
+
+MRF3866 and MRF5160 were desoldered and tested in a component tester:
+
+| Part | Component tester reading |
+|------|--------------------------|
+| MRF3866 (NPN) | Identified as BJT NPN. **No h_FE reading.** B-E resistance ≈ 6.4 MΩ. |
+| MRF5160 (PNP) | Identified as BJT PNP. h_FE = 70. V_BE = 992 mV. |
+
+Two spare 2N3866A (TO-39) tested for comparison: same behaviour as the
+MRF3866 — no h_FE, B-E resistance ≈ 2 MΩ. Both NPN types (MRF and
+2N) occasionally showed a diode indication between C←E.
+
+The MRF5160 values are somewhat reasonable; the MRF3866 (and the
+2N3866A spares) show no h_FE and a very high B-E resistance, which
+may indicate the component tester cannot properly characterise
+high-f_T RF power transistors at its test current/voltage levels.
+
+**Verdict:** Step 8a **FAILED** — A211 final LO PA (V3/V4 push-pull
+stage) broke during the bench test. The chips initially worked as
+expected, confirming the doubler, filters, and BFG97 pre-driver are
+all healthy, then degraded and failed under RF drive at close to
+rated output. The §7D D.5 "chips alive" verdict is now
+**overturned** — the MRF3866/MRF5160 push-pull pair is the root
+cause of the X75-dead symptom. §7E silicon-pull rebuild is
+**unblocked**; replacement transistors required.
+
 ### Step 8b — Milled casing, bench-PSU standalone *(SA, casing on bench, A211 disconnected)*
 
 > **Ordering:** runnable any time the casing is unmated from A211 —
@@ -3326,7 +3380,42 @@ A pass at Step 8b exonerates the casing in full and isolates any
 remaining X75-dead symptom to the on-A211 IF chain (covered by
 Step 10a) or the on-A211 LO chain (covered by Step 8a).
 
+Run results — this unit (2026-05-08):
 
+**Setup:** A211 PCB disconnected from milled casing. SMA coax cable
+soldered to the V3/V4 trace on the A211 PCB (= the X21 LO output
+node). A211 powered from bench PSU via W216: +15 V (120 mA), −15 V
+(70 mA), +7.5 V (current not recorded). Casing-side X21 driven with
+**220 MHz, +27 dBm** from the SMA coax. Casing-side X211 driven with
+**3 dBm, 2–6 GHz**. Biases on X72 / X95 / X96 supplied by the A211
+board (still powered via W216) through the SMB pigtails.
+
+**S11 at X21 / X216 port (VNA, 10 dBm):**
+
+| Frequency | Return loss |
+|-----------|-------------|
+| 206 MHz   | 2.3 dB      |
+| 234 MHz   | 5.2 dB      |
+| 254 MHz   | 7.6 dB (lowest dip) |
+
+S11 is poor but not shorted — consistent with a broadband mismatch
+into the comb generator input, expected for a bench setup without the
+matched A211 driver.
+
+**IF output at X75:**
+
+Good output observed. With both LO frequency and RF frequency varied,
+IF output at X75 reached **up to 18 dBm** at some frequency
+combinations. This maps to the "Tracking IF tone at expected level"
+outcome row → **A214 + sampling mixer + A212 + casing biases all
+healthy. Casing EXONERATED.**
+
+**Verdict:** Step 8b **PASSED.** The A21 milled casing (A212 comb
+generator + sampling mixer + IF amp, A213 LPF, A214 pre-mixer RF
+amp) is **working as expected**. Combined with Step 10a PASS
+(on-A211 IF chain) and Step 8a FAIL (on-A211 LO PA), the fault is
+now definitively isolated to the **V3/V4 MRF3866/MRF5160 push-pull
+LO PA stage on A211**.
 
 ### Step 9 — Re-read X75 after Step 8 *(SA, only if Step 8 X21 passes)*
 

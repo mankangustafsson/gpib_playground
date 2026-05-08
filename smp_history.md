@@ -797,6 +797,292 @@ as MAR-8, confirming the bench finding.
 > on the wrong "L41 / L43 = collector chokes, 100 Ω = collector
 > summing R" reading and are withdrawn.
 
+### H-2026-05-08-d5-decision-gate-and-bench-results
+
+**Moved from** [`smp_next.md` §Decision gate — D.5 cross-check](smp_next.md#decision-gate--d5-cross-check-instrument-off-ohm-mode-5-min) **on** 2026-05-08.
+**Superseded by:** Step 8a FAILED 2026-05-08 — D.5 PASSED but the "chips alive" conclusion was overturned when V3/V4 broke under RF drive during Step 8a. The D.5 probe table, outcome branches, bench results, and pin-numbering doc-bug note are retained here for FA traceability.
+
+<details><summary>D.5 probe table + outcome branches (click to expand)</summary>
+
+```
++---+-----------------------------------------+-----------+----------------------------+
+| # | Probe                                   | Expected  | Tells us                   |
++---+-----------------------------------------+-----------+----------------------------+
+| 1 | V3 pin 1/4/5/8 (3866 emitter pour)      |  ~3.92 Ω  | confirms R41 3R92 emitter  |
+|   |   → −15 V rail                          |           | tie to −15 V is intact     |
+| 2 | V4 pin 1/4/5/8 (5160 emitter pour)      |  ~3.92 Ω  | confirms R40 3R92 emitter  |
+|   |   → +15 V rail                          |           | tie to +15 V is intact     |
+| 3 | V3 pin 6/7 (3866 base node)             |  ~101 Ω   | confirms R44 100 Ω +       |
+|   |   → −15 V rail                          |           | L43 470 nH base-bias path  |
+| 4 | V4 pin 6/7 (5160 base node)             |  ~101 Ω   | confirms R43 100 Ω +       |
+|   |   → +15 V rail                          |           | L41 470 nH base-bias path  |
+| 5 | V3 pin 2/3 (3866 collector tie)         |  sub-Ω    | confirms collectors are    |
+|   |   ↔ V4 pin 2/3 (5160 collector tie)     |           | board-tied as drawn        |
+| 6 | V3 pin 2/3 collector tie                |    OL     | confirms collectors are    |
+|   |   → +15 V rail (and same to −15 V)      |           | NOT DC-tied to either rail |
+|   |                                         |           | (output match is L45 → C49 |
+|   |                                         |           | DC-block to off-page X21)  |
+| 7 | V3 pin 6/7 base ↔ V4 pin 6/7 base       |  ~few kΩ  | confirms inter-base tie    |
+|   |   (across R42 4K75 + L40 / L42 39 nH)   |           | network is intact          |
++---+-----------------------------------------+-----------+----------------------------+
+```
+
+Outcome branches:
+
+```
++--------------------------+------------------------------------------+
+| Cross-check result       | Action                                   |
++--------------------------+------------------------------------------+
+| All as expected          | §7D D.3 superseded; silicon likely ALIVE.|
+|                          | DEFER rebuild step 2. Re-open trigger    |
+|                          | hunt elsewhere on A21 (BFG97 stage,      |
+|                          | OP97 N90, X21 LPF, §7G monitor block,    |
+|                          | comparator-input divider stub — see      |
+|                          | next-bench-trace plan below).            |
+| Probe 1 / 2 off          | Open R40 / R41 3R92 emitter resistor     |
+|                          | (or cracked emitter pour bond). Repair   |
+|                          | before fitting fresh silicon.            |
+| Probe 3 / 4 off          | Open base-bias path (L41 / L43 470 nH    |
+|                          | choke open, R43 / R44 100 Ω blown, or    |
+|                          | base-pin pad lifted). Repair before      |
+|                          | fitting fresh silicon.                   |
+| Probe 5 off              | Collector-tie trace cracked. Repair      |
+|                          | before fitting fresh silicon.            |
+| Probe 6 reads few Ω      | Short across L45, C49 fused leaky, or    |
+|                          | downstream X21-side network shorted to   |
+|                          | rail. Trace before powering up.          |
+| Probe 7 OL               | R42 / L40 / L42 inter-base network open. |
+|                          | Investigate before re-powering.          |
+| All as expected BUT 5160 | Proceed to D.6 desolder of 5160 only     |
+|   B-E persistently odd   | for out-of-circuit confirmation.         |
++--------------------------+------------------------------------------+
+```
+
+</details>
+
+<details><summary>D.5 bench results — 2026-05-03 (PASSED) (click to expand)</summary>
+
+In-circuit DMM ohm sweep, instrument off, casing on. All seven probes
+land on the "all as expected" branch above; chips alive, bias network
+intact, output match DC-blocked as drawn.
+
+```
++---+--------------------------------------+----------+--------------+--------+
+| # | Probe                                | Expected | Measured     | Verdict|
++---+--------------------------------------+----------+--------------+--------+
+| 1 | V3 emit pour (pin 1/4/5/8) → −15 V   | ~3.92 Ω  | 5.3 Ω        | PASS   |
+| 2 | V4 emit pour (pin 1/4/5/8) → +15 V   | ~3.92 Ω  | 5.4 Ω        | PASS   |
+| 3 | V3 base node (pin 6/7)    → −15 V    |  ~101 Ω  | 102.6 Ω      | PASS   |
+| 4 | V4 base node (pin 6/7)    → +15 V    |  ~101 Ω  | 102.3 Ω      | PASS   |
+| 5 | V3 pin 2/3 ↔ V4 pin 2/3 (collectors) |  sub-Ω   | 0.2 Ω        | PASS   |
+| 6 | V3 pin 2/3 collector tie  → ±15 V    |   OL     | OL           | PASS   |
+| 7 | V3 pin 6/7 ↔ V4 pin 6/7 (inter-base) |  ~few kΩ | 2.64 kΩ      | PASS   |
++---+--------------------------------------+----------+--------------+--------+
+```
+
+Notes:
+
+- Probes 1 / 2 read ≈ 5.3-5.4 Ω vs. the 3.92 Ω expected — DMM lead
+  offset ≈ 1.4 Ω accounts for the difference; the resistors themselves
+  are healthy and the emitter pour-to-rail bond is intact.
+- Probes 3 / 4 land within 1.5 % of the 101 Ω schematic prediction
+  (R43 / R44 100 Ω + L41 / L43 470 nH DCR) — base-bias path on both
+  chips intact.
+- Probe 5 = 0.2 Ω confirms the V3 / V4 collectors are commoned on the
+  copper as drawn; probe 6 = OL confirms the L45 / C49 output match
+  is the only DC path off that node (no rail short).
+- Probe 7 = 2.64 kΩ matches the ~few kΩ band predicted by R42 4K75 +
+  L40 / L42 inter-base network.
+
+**Verdict:** §7D D.3 silicon-latch-up hypothesis is bench-falsified at
+the ohm-cross-check level. The MRF3866 / MRF5160 push-pull pair are
+**alive**; bias network around them (R40 / R41 3R92, R43 / R44 100 Ω,
+L41 / L43 470 nH, R42 4K75, L40 / L42 39 nH, L45 / C49 output match)
+is intact. Silicon-pull rebuild (§7E step 2) is **formally on hold**.
+The remaining open question on the LO-amp half is settled by RF
+validation only — Step 8a (out-of-casing, board on bench) or Target 4
+(in-instrument R65 split-test) closes it by exclusion.
+
+</details>
+
+<details><summary>Pin-numbering convention doc-bug note (click to expand)</summary>
+
+> **Doc-bug flagged for follow-up — pin-numbering convention.** Two
+> conventions coexist in `smp_hw_diag.md` for V3 / V4 (MRF3866 /
+> MRF5160 in SO-8):
+>
+> - **Convention A** (this D.5 table; §7D D.0 line ~784 paragraph
+>   "Collector output: pins 2 / 3 of each SO-8"; bench-confirmed by
+>   probes 5 + 6 above): **pin 2/3 = collector**, **pin 6/7 = base**,
+>   pin 1/4/5/8 = emitter pour.
+> - **Convention B** (part-bind table at `smp_hw_diag.md` L1201-1202;
+>   §7G post-rebuild expectation tables L1455-1461; Table D rows
+>   7a-7e narrative L985 / L992 / L1004-1017 / L1117-1144):
+>   **pin 2/3 = base**, **pin 6/7 = collector**, pin 1/4/5/8 = emitter
+>   pour.
+>
+> The D.5 readings discriminate decisively in favour of Convention A:
+> probe 5 (V3 pin 2/3 ↔ V4 pin 2/3 = 0.2 Ω) and probe 6 (V3 pin 2/3 →
+> ±15 V = OL) only fit a DC-blocked output node, which the schematic
+> places on the **collectors** via L45 / C49 — i.e. on the pin 2/3
+> pair under Convention A. Under Convention B those probes would land
+> on the base group, which is DC-tied to the rails through R43 / R44
+> + L41 / L43 (≈ 101 Ω, not OL) and would show ≈ 200 Ω cross-chip
+> through the inter-base R42 path (not 0.2 Ω). The bench data is
+> internally consistent with itself and with the recovered schematic
+> only under Convention A.
+>
+> Convention B is therefore presumed to be a stale carry-over from
+> the pre-2026-04-30 part-bind work that assumed the standard
+> Motorola Case 751-05 Style 1 datasheet pinout without bench
+> verification. Cleanup is **non-blocking** — neither the rebuild
+> decision nor any downstream bench step depends on which convention
+> the doc body uses, only on the bench data itself. Queued as
+> follow-up: confirm the chip-silkscreen pin-1 marker against the
+> probed pad on a future bench session, then sweep `smp_hw_diag.md`
+> to land on a single convention.
+
+</details>
+
+### H-2026-05-08-d6-desolder-section
+
+**Moved from** [`smp_next.md` §D.6 confirmation by desolder](smp_next.md) **on** 2026-05-08.
+**Superseded by:** Both chips desoldered during Step 8a 2026-05-08 (failed under RF drive); D.6 OOC re-probe procedure is moot — chips are out and confirmed failed by component tester.
+
+<details><summary>D.6 desolder procedure (click to expand)</summary>
+
+Pull **5160 only** (smaller, the chip with the ambiguous B-E reading,
+cheaper to risk on rework). Re-run full Tier B junction battery
+out-of-circuit:
+
+```
+PNP (5160) healthy out-of-circuit  (SO-8 Case 751-05 Style 1:
+  E = pins 1/4/5/8 quad-bonded, B = pins 2/3, C = pins 6/7)
++-------+--------------+--------------+-------+
+| Test  | Red          | Black        | Read  |
++-------+--------------+--------------+-------+
+| B-E F | E (1/4/5/8)  | B (2 or 3)   | ~0.65 |
+| B-E R | B (2 or 3)   | E (1/4/5/8)  |  OL   |
+| B-C F | C (6 or 7)   | B (2 or 3)   | ~0.65 |
+| B-C R | B (2 or 3)   | C (6 or 7)   |  OL   |
+| C-E   | E (1/4/5/8)  | C (6 or 7)   |  OL   |
+| E-C   | C (6 or 7)   | E (1/4/5/8)  |  OL   |
++-------+--------------+--------------+-------+
+```
+
+Plus bond sanity (1↔4↔5↔8 < 0.5 Ω, 2↔3 < 0.5 Ω, 6↔7 < 0.5 Ω).
+
+**If 5160 reads clean OOC:** §7D D.3 fully overturned. Reflow 5160
+back, leave 3866 in place, hunt elsewhere.
+
+**If 5160 reads damaged OOC (C-E short or B-E open):** D.3 confirmed
+for the 5160; re-evaluate the 3866 separately (most likely also pull
+it given they failed as a complementary pair).
+
+</details>
+
+### H-2026-05-08-rf-probes-doubler-location
+
+**Moved from** [`smp_next.md` §RF probes — doubler location + 3866/5160 role](smp_next.md) **on** 2026-05-08.
+**Superseded by:** Step 8a 2026-05-08 resolved the topology directly — doubler + BFG97 working, V3/V4 broke under RF drive as a class-AB power amp. §7F / §7G already resolved by schematic 2026-04-30. The bench-check table and outcome interaction are no longer needed as discriminators.
+
+<details><summary>RF probes bench-check table + outcome interaction (click to expand)</summary>
+
+The bench checks below were originally framed to discriminate
+between the AGC and power-amp readings; with the topology now
+resolved by the schematic, they are downgraded to **bring-up sanity
+checks for Step 8a** rather than topology disambiguators.
+
+| # | Probe                                                       | Tool     | Discriminates                                                                                                            |
+|---|-------------------------------------------------------------|----------|--------------------------------------------------------------------------------------------------------------------------|
+| 1 | DC V across 3R92 on each chip (3866 pour ↔ −15 V; 5160 pour ↔ +15 V) **= Step 8a procedure step 7** | DMM      | 4–40 mV ⇒ detector duty (AGC reading stands). 200–800 mV ⇒ class-AB power-output duty (power-amp reading wins).         |
+| 2 | SA at X21 brass pin — **= Step 8a SA capture** (board out, bench PSU); in-instrument Step 8 is the post-rebuild fallback | SA       | Centre at 220 MHz ⇒ doubling done upstream of X21 (falsifies §7F (d)). Centre at 110 MHz ⇒ §7F (d) confirmed.           |
+| 3 | SA at BFG97 collector tab (low-cap probe; bench during 8a, or in-instrument post-rebuild) | SA       | Level ≪ X21 ⇒ flow is BFG97 → 3866/5160 → X21 (power-amp). Level ≈ X21 minus small loss ⇒ inverse flow (AGC).           |
+| 4 | SA at RIGHT 420 collector output (low-cap probe; bench during 8a, or in-instrument post-rebuild) | SA       | 220 MHz dominant ⇒ §7F (a) confirmed (420 cascade IS the doubler). 110 MHz dominant ⇒ doubler is downstream.        |
+| 5 | SA at 3866 / 5160 commoned base node (low-cap probe; bench during 8a, or in-instrument post-rebuild) | SA       | Clean fundamental at −10 to 0 dBm ⇒ power-amp drive. < −20 dBm with rectification products ⇒ envelope sense tap.        |
+| 6 | A08 (MAR-8) pin-4 DC + pin-1 RF-trace in X75 compartment | DMM + SA | **DONE 2026-04-29 (✓ ✓):** role (i) active IF post-amp CONFIRMED. Step 10a S21 2026-05-05 confirms MAR-8 gain (+31.5 dB). |
+
+Probe 1 is decisive on §7G and re-prioritizes the §7F probe order:
+
+- **Power-amp reading (probe 1 reads 200–800 mV):** §7D γ "RESOLVED"
+  header downgrades to "leading hypothesis" pending probe 3. §7F (a)
+  — 420 cascade as doubler — moves to top of doubler-location list
+  (the doubling has to sit upstream of the BFG97 base if the BFG97
+  is the pre-driver). Run probe 4 next.
+- **AGC reading (probe 1 reads 4–40 mV):** §7D γ verdict stands as
+  resolved. Run probes 2 and 4 to localize the doubler; §7F (c)
+  (BFG97 in compression) stays viable.
+
+</details>
+
+### H-2026-05-08-target-4-r65-planning-block
+
+**Moved from** [`smp_next.md` §Target 4 — R65 in-instrument LO-chain probe](smp_next.md) **on** 2026-05-08.
+**Superseded by:** Step 8a 2026-05-08 localised the fault to V3/V4 directly; Target 4 (in-instrument R65 stage-by-stage probe) is no longer needed.
+
+In-instrument, in-circuit alternative to Step 8a that localises the
+X50 → X21 LO-chain failure stage by stage, without pulling A211
+from the casing or wiring bench PSUs to W216. R65 is the 0 Ω
+jumper at the FREQUENCY DOUBLER ↔ LO AMPLIFIER boundary on sheet
+02/02; lifting one end gives a clean, reversible hard break — R67
+121 Ω is the series match into V2 BFG97 base, R66 750 Ω is the
+shunt that completes the V2 input divider.
+
+Sequencing vs the existing planning entries:
+
+- **Target 4 vs Step 8a:** mutually exclusive next-bench-session
+  candidates for the same LO-chain question. Pick Target 4 to keep
+  A211 in-instrument; pick Step 8a for the most thorough silicon-
+  question closure with the board out. A pass at Step 4-X50
+  Stage 5 closes §7D D.3 / §7F doubler-location / §7G push-pull-
+  vs-detector by exclusion the same way Step 8a does.
+- **Target 4 vs Targets 1, 2, 3:** Target 4 leaves A211 mounted,
+  so it does *not* fold the out-of-casing DMM trace items
+  (Targets 1/2/3) into the same session. If Target 4 runs first
+  and resolves the LO-chain question, A211 may never come out of
+  the casing — re-evaluate whether the Targets 1/2/3 doc-cleanup
+  work is still worth the unmate.
+
+### H-2026-05-08-target-5-v50-deblob-planning
+
+**Moved from** [`smp_next.md` §Target 5 — §7F frequency-doubler topology + AT-42085 pinout rewrite](smp_next.md) **on** 2026-05-08.
+**Superseded by:** Step 8a (2026-05-08) confirmed V3/V4 push-pull PA as the root cause of the X75-dead symptom. The V50 solder-blob finding remains valid (V50 collector GND-shorted, disabling one doubler leg with ~6 dB loss), but the deblob + Target 4 R65 baseline/delta measurement plan is superseded by the LDMOS gain-block replacement approach. The V50 deblob may still be done as an opportunistic repair during the A211 rework, but it no longer gates any diagnostic decision. The §7F doc edit pass and cross-doc edits are deferred until the LDMOS replacement is validated.
+
+<details><summary>Target 5 — full planning block (click to expand)</summary>
+
+Added 2026-05-03 from user-led visual inspection of V50 vs V60 +
+re-read of `rs_smp_corpus/volumes/band-3/figures/A211_var02_schematic_sheet_02_02.jpg`
+zone A (FREQUENCY DOUBLER block). Bench-confirmed 2026-05-03:
+DMM probes 1 + 2' PASS, probe 2 invalidated and replaced (see
+decision-gate block below). **Bench gate electrically / visually
+CLEARED.** Per user instruction 2026-05-03 ("hold"), all §7F
+doc edits in `smp_hw_diag.md` remain on hold pending either the
+deblob + re-test outcome OR the Target 4 (R65) baseline +
+post-deblob delta — whichever the user runs first (sequencing
+note below).
+
+**Findings to land in §7F:**
+
+1. AT-42085-B pinout (85-mil plastic / SOT-86 4-lead): pin 1 = Base,
+   pin 2 = Emitter, pin 3 = Collector, pin 4 = Emitter (B-E-C-E).
+2. V50/V60/V61/V62 are a single push-push frequency-doubler stage,
+   not a two-stage cascade NPN amplifier.
+3. V60 input from same X50/FSTEP drive as V50 (not cascade-coupled).
+4. V50 pin 3 (collector) has a solder-blob parallel-short to GND
+   across L50, disabling one doubler leg with ~6 dB loss.
+
+**Sequencing — Target 4 (R65 probe) before deblob** was considered
+2026-05-03 to capture a calibrated baseline before irreversible
+rework. With Step 8a having localized the fault to V3/V4, this
+sequencing is moot — the deblob can be done as an opportunistic
+repair during the LDMOS replacement rework.
+
+**§7F doc edit pass (8 edits) and cross-doc impact (4 edits):**
+deferred until the LDMOS replacement is validated. Edit tables
+retained here for reference.
+
+</details>
+
 ## From `smp_a21_modernization.md`
 
 ### H-2026-04-26-original-drop-in-constraint
@@ -1005,6 +1291,106 @@ ground.
 - Earlier "A8 OK" classification in the `## Modules OK` section is
   partially superseded: standard DDS sweep still passes, but the boot
   err 221 is on a separate sub-loop not covered by that test.
+
+### H-2026-05-08-step-7d-r4d-failure-chain-narrative
+
+**Moved from** [`smp_diag.md` §2 A21 Sampling Module](smp_diag.md#2-a21-sampling-module--sampling-pulse-generator-dead) **on** 2026-05-08.
+**Superseded by:** Step 8a FAILED 2026-05-08 — V3/V4 MRF3866/MRF5160 push-pull PA confirmed as root cause (chips broke under RF drive on bench). The "R4D op-amp + A0 detector" failure-chain narrative below was itself superseded 2026-04-30 (reinterpreted as expected class-AB push-pull bias, not dead op-amps); the 2026-05-08 bench test settles the silicon question definitively. Retained verbatim for FA traceability.
+
+<details><summary>Verbatim §2 Step 7D failure-chain narrative (click to expand)</summary>
+
+> Superseded 2026-04-30 — full §2 STEP 7D FAILURE-CHAIN banner moved to
+> [`smp_history.md#H-2026-04-30-step-7d-failure-chain-superseded`](smp_history.md#h-2026-04-30-step-7d-failure-chain-superseded).
+> Current verdict: the "dead R4D op-amps + fused filters + stressed A0"
+> failure chain reads instead as expected DC behavior of a healthy
+> class-AB push-pull RF stage (V3 = MRF3866 NPN + V4 = MRF5160 PNP);
+> A0 SOT-23 is the DIAGSAMP envelope rectifier; chips presumed alive
+> pending Step D.5 + Step 8a bench validation. The narrative below this
+> marker is **retained verbatim for FA traceability**.
+
+- **Bench result — Step 7D failed** on the X21 LO ALC cluster (lower
+  Side-B). Confirmed faults — two dead silicon parts and two
+  fused-open supply-filter components, plus one stressed-but-
+  functional detector:
+  1. **R4D-A** internal die short (V+↔V− and output↔V+);
+  2. **+15 V supply filter to R4D-A pin 7 — fused OPEN** (per-chip
+     series resistor / ferrite bead opened under the short-circuit
+     current draw, isolating the dead chip from the global rail);
+  3. **R4D-B** internal die short (V+↔V− and output↔V+);
+  4. **−15 V supply filter to R4D-B pin 4 — fused OPEN** (same
+     mechanism on the −15 V leg).
+  5. SOT-23 **A0** detector (re-identified off-line as a
+     two-terminal Schottky single, pin 2 truly NC, by comparison
+     against two other "A0"-marked parts on this PCB): **stressed
+     but functional** — Vf 0.34 V forward (3→1) vs 0.234 / 0.265 V
+     on the healthy refs, OL reverse. Earlier "shorted in reverse
+     breakdown" reading was in-circuit and is contradicted by the
+     comparison test. A0 is therefore **not** the trigger of #1 / #3;
+     replace anyway during the rebuild as cheap insurance.
+
+  Powered readings on the R4D pair are mirror-symmetric — every pin
+  on R4D-A pinned to its local V− net (≈ −14.7 / −15.2 V), every pin
+  on R4D-B pinned to its local V+ net (≈ +14.5 / +15.1 V), with B4
+  − B7 = +0.62 V (one Vbe), the textbook signature of a chip with an
+  internal V+↔V− short whose upstream supply path on the *other*
+  rail has gone open. The OP97 (N90) next door still reads clean
+  ±15 V on its supplies, confirming the global rails are healthy and
+  the opens are local per-chip filter elements, not the rail itself.
+
+  Failure chain to symptom: **trigger TBD → R4D-A killed → R4D-B
+  killed → per-chip supply fuses opened (saving the global rail) →
+  LO drive at X21 collapsed → A212 starved of LO → X75 / TP1910
+  dead** with §7.1.7 bias still nominal — a clean explanation for
+  the observed "Step 7 passes but X75 stays dead" pattern. A0 was
+  originally hypothesised as the trigger; the comparison test
+  against reference parts demoted A0 to "stressed but functional",
+  so the trigger is now under re-investigation (candidate
+  hypotheses: upstream LO transient surviving past A0, set-point
+  divider open inducing integrator wind-up, supply-rail transient).
+- **Next action:** **Step 7E A211 ALC rebuild + verification**.
+  Power off A211 before any soldering per §7.4 / §7.5. Pull all three
+  failed silicon parts. With the chips out, run a 30-second pad-to-
+  rail DMM ohm check on the four R4D supply pads — two will read
+  open (R4D-A pin 7 leg and R4D-B pin 4 leg per the mirror-symmetric
+  analysis above); locate and replace the fused series filter parts
+  (in-kind if the value is readable, otherwise a 22 Ω 1206 is a safe
+  substitute — current-limit role only). Then fit replacements: A0
+  (**BAT54C** SOT-23 common-cathode dual Schottky, marking `L43`,
+  fitted rotated 180° so the common cathode lands on footprint pin 1
+  / anode of D1 on footprint pin 3; D2 unused with its anode on
+  footprint pin 2 / NC — completely benign. Vf ≈ 0.32 V at 1 mA,
+  closer to the original's barrier than BAS70-05's 0.41 V. BAS70-05
+  also on hand as a second-attempt fallback (identical SOT-23
+  topology and rotation rule, slightly higher Vf). HSMS-282C/K or
+  HSMS-286C/K available as SOT-323 alternatives with bench-bodge
+  fit; HSMS-2822 fits SOT-23 but needs a pad-2 solder bridge to use
+  one of its diodes. See smp_hw_diag.md Step 7E for full
+  alternatives), R4D-A and R4D-B
+  (**MC34071DR2G** for this rebuild — ON Semi (ex-Motorola) SOIC-8
+  single, ±1.5…±22 V rated, 13 V/µs slew, bipolar Darlington
+  input with ground-sensing common-mode range, all-NPN output stage;
+  standard V+ = 7, V− = 4, OUT = 6 pinout. Most likely the same
+  Motorola die family as the original "R4D" house-mark itself.
+  MC33071 / OP07 / OP27 / TLE2027 / LT1677 also acceptable
+  substitutes — see smp_hw_diag.md §7E. *Not* OP97 — N90 on this
+  PCB is the only OP97FS, clearly marked `PMI445 / OP97FS`). After
+  rebuild, re-run
+  Step 7D rows 1–6 + the R4D-B supply rows 4a / 4b (mid-rail outputs,
+  clean ±V on every supply pin, finite drop across 3R92), re-read
+  X75 / TP1910 from the same `--a21-probe` output, and re-confirm
+  Step 7 A/B still passes. **Pass + TP1910 climbs to 7.5 … 11 V →
+  rebuild verified, no further steps required.** Pass but X75 still
+  dead → **Step 8** X21 doubler spectrum on SA via ≥30 dB / ≥1 W pad
+  (contingent diagnostic only — do **not** SA-probe X21 before
+  fitting the pad; X21 carries up to +30 dBm = 1 W) → Step 9 re-read
+  X75 → Step 10 on-PCB IF |S21| via VNA, X70↔X75, with the A212 IF
+  amp powered → Step 11 diag rectifier on A211.
+  **Recurring-failure escalation:** if the new A0 / R4D parts die
+  again shortly after power-up, the on-PCB LO chain (V50/V60/V2/V3/V4)
+  is over-driving X21 — measure absolute X21 power on the SA before
+  attempting a third rebuild. See [smp_hw_diag.md → Step 7D](smp_hw_diag.md#step-7--a21-bias--a211-comparator-state-measure-dc-voltage-only-if-step-4-shows-x75-dead-with-inputs-present).
+
+</details>
 
 ## From `smp_fan.md`
 
